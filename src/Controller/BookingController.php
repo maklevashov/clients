@@ -21,7 +21,7 @@ class BookingController extends AbstractController
             ->select('a', 'c')
             ->leftJoin('a.client', 'c')
             ->where('a.appointmentDate = :today')
-            ->setParameter('today', new \DateTime())
+            ->setParameter('today', new \DateTime('today'))
             ->orderBy('a.startTime', 'ASC')
             ->getQuery()
             ->getResult();
