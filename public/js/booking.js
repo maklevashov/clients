@@ -2,17 +2,17 @@ $(document).ready(function() {
     let selectedHour = null;
     let selectedDate = new Date().toISOString().split('T')[0];
 
-    // Инициализация
+    // РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ
     $('#date').val(selectedDate);
 
-    // Обработчик клика по временному слоту
+    // РћР±СЂР°Р±РѕС‚С‡РёРє РєР»РёРєР° РїРѕ РІСЂРµРјРµРЅРЅРѕРјСѓ СЃР»РѕС‚Сѓ
     $('.slot-content').click(function() {
         selectedHour = $(this).data('hour');
         $('#time').val(selectedHour + ':00');
         $('#bookingModal').show();
     });
 
-    // Закрытие модальных окон
+    // Р—Р°РєСЂС‹С‚РёРµ РјРѕРґР°Р»СЊРЅС‹С… РѕРєРѕРЅ
     $('.close').click(function() {
         $('#bookingModal').hide();
     });
@@ -27,7 +27,7 @@ $(document).ready(function() {
         }
     });
 
-    // Переключение дней
+    // РџРµСЂРµРєР»СЋС‡РµРЅРёРµ РґРЅРµР№
     $('.calendar-day').click(function() {
         $('.calendar-day').removeClass('active');
         $(this).addClass('active');
@@ -35,7 +35,7 @@ $(document).ready(function() {
         loadAppointments(selectedDate);
     });
 
-    // Навигация
+    // РќР°РІРёРіР°С†РёСЏ
     $('.nav-item').click(function() {
         $('.nav-item').removeClass('active');
         $(this).addClass('active');
@@ -48,12 +48,12 @@ $(document).ready(function() {
         }
     });
 
-    // Добавление клиента
+    // Р”РѕР±Р°РІР»РµРЅРёРµ РєР»РёРµРЅС‚Р°
     $('.add-client-btn').click(function() {
         $('#clientModal').show();
     });
 
-    // Обработка формы создания записи
+    // РћР±СЂР°Р±РѕС‚РєР° С„РѕСЂРјС‹ СЃРѕР·РґР°РЅРёСЏ Р·Р°РїРёСЃРё
     $('#bookingForm').submit(function(e) {
         e.preventDefault();
 
@@ -64,7 +64,7 @@ $(document).ready(function() {
         };
 
         if (!formData.client_id) {
-            alert('Выберите клиента');
+            alert('Р’С‹Р±РµСЂРёС‚Рµ РєР»РёРµРЅС‚Р°');
             return;
         }
 
@@ -81,12 +81,12 @@ $(document).ready(function() {
                 }
             },
             error: function(xhr) {
-                alert('Ошибка при создании записи: ' + xhr.responseJSON.error);
+                alert('РћС€РёР±РєР° РїСЂРё СЃРѕР·РґР°РЅРёРё Р·Р°РїРёСЃРё: ' + xhr.responseJSON.error);
             }
         });
     });
 
-    // Обработка формы создания клиента
+    // РћР±СЂР°Р±РѕС‚РєР° С„РѕСЂРјС‹ СЃРѕР·РґР°РЅРёСЏ РєР»РёРµРЅС‚Р°
     $('#clientForm').submit(function(e) {
         e.preventDefault();
 
@@ -103,19 +103,19 @@ $(document).ready(function() {
             success: function(response) {
                 if (response.success) {
                     $('#clientModal').hide();
-                    // Добавляем клиента в выпадающий список
+                    // Р”РѕР±Р°РІР»СЏРµРј РєР»РёРµРЅС‚Р° РІ РІС‹РїР°РґР°СЋС‰РёР№ СЃРїРёСЃРѕРє
                     $('#client').append(`<option value="${response.id}">${response.name} - ${response.phone}</option>`);
                     $('#clientForm')[0].reset();
                 }
             },
             error: function(xhr) {
-                alert('Ошибка при добавлении клиента: ' + xhr.responseJSON.error);
+                alert('РћС€РёР±РєР° РїСЂРё РґРѕР±Р°РІР»РµРЅРёРё РєР»РёРµРЅС‚Р°: ' + xhr.responseJSON.error);
             }
         });
     });
 });
 
-// Функция загрузки записей
+// Р¤СѓРЅРєС†РёСЏ Р·Р°РіСЂСѓР·РєРё Р·Р°РїРёСЃРµР№
 function loadAppointments(date) {
     $.ajax({
         url: '/api/appointments?date=' + date,
@@ -126,7 +126,7 @@ function loadAppointments(date) {
     });
 }
 
-// Функция обновления отображения расписания
+// Р¤СѓРЅРєС†РёСЏ РѕР±РЅРѕРІР»РµРЅРёСЏ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ СЂР°СЃРїРёСЃР°РЅРёСЏ
 function updateScheduleDisplay(appointments) {
     $('.booking-card').remove();
 
@@ -140,7 +140,7 @@ function updateScheduleDisplay(appointments) {
                 <div class="booking-time">${appointment.start_time}-${appointment.end_time}</div>
                 <div class="booking-client">${appointment.client_name}</div>
                 <div class="booking-phone">${appointment.client_phone}</div>
-                <button class="delete-booking" onclick="deleteAppointment(${appointment.id})">?</button>
+                <button class="delete-booking" onclick="deleteAppointment(${appointment.id})">Г—</button>
             </div>
         `;
 
@@ -148,9 +148,9 @@ function updateScheduleDisplay(appointments) {
     });
 }
 
-// Функция удаления записи
+// Р¤СѓРЅРєС†РёСЏ СѓРґР°Р»РµРЅРёСЏ Р·Р°РїРёСЃРё
 function deleteAppointment(id) {
-    if (confirm('Удалить эту запись?')) {
+    if (confirm('РЈРґР°Р»РёС‚СЊ СЌС‚Сѓ Р·Р°РїРёСЃСЊ?')) {
         $.ajax({
             url: '/api/appointments/' + id,
             method: 'DELETE',
