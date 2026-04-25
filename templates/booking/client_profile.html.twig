@@ -1,0 +1,890 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Данные клиента{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .profile-container {
+            background: #fff;
+            min-height: 100vh;
+            padding-bottom: 80px;
+        }
+
+        /* Шапка профиля */
+        .profile-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: white;
+            font-size: 20px;
+        }
+
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            font-size: 40px;
+        }
+
+        .profile-name {
+            font-size: 24px;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 5px;
+        }
+
+        .profile-phone {
+            font-size: 14px;
+            color: rgba(255,255,255,0.9);
+        }
+
+        .edit-profile-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: white;
+            font-size: 18px;
+        }
+
+        /* Основной контент */
+        .profile-content {
+            padding: 20px;
+        }
+
+        .info-section {
+            background: #f8f9fa;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            padding: 15px 20px;
+            background: #fff;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title .icon {
+            font-size: 18px;
+        }
+
+        .info-row {
+            display: flex;
+            padding: 15px 20px;
+            border-bottom: 1px solid #f0f0f0;
+            background: #fff;
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            width: 100px;
+            font-size: 14px;
+            color: #999;
+        }
+
+        .info-value {
+            flex: 1;
+            font-size: 16px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .info-value.unknown {
+            color: #ccc;
+            font-weight: normal;
+        }
+
+        /* Поле для выбора даты */
+        .date-input {
+            border: none;
+            font-size: 16px;
+            color: #333;
+            font-weight: 500;
+            background: transparent;
+            cursor: pointer;
+        }
+
+        /* Категории */
+        .categories-section {
+            background: #fff;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .categories-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .categories-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .add-category-btn {
+            background: none;
+            border: none;
+            color: #007AFF;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0 8px;
+        }
+
+        .categories-list {
+            padding: 15px 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .category-tag {
+            background: #e8f0fe;
+            color: #007AFF;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .category-tag .remove-category {
+            background: none;
+            border: none;
+            color: #999;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .category-tag .remove-category:hover {
+            color: #FF6B6B;
+        }
+
+        /* Примечание */
+        .note-section {
+            background: #fff;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .note-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .note-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .edit-note-btn {
+            background: none;
+            border: none;
+            color: #007AFF;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .note-content {
+            padding: 20px;
+            min-height: 100px;
+        }
+
+        .note-text {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        .note-text.empty {
+            color: #ccc;
+        }
+
+        .note-textarea {
+            width: 100%;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 14px;
+            font-family: inherit;
+            resize: vertical;
+            display: none;
+        }
+
+        .note-actions {
+            display: none;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .note-save-btn, .note-cancel-btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .note-save-btn {
+            background: #007AFF;
+            color: white;
+            border: none;
+        }
+
+        .note-cancel-btn {
+            background: #f0f0f0;
+            color: #666;
+            border: none;
+        }
+
+        /* История записей */
+        .history-section {
+            background: #fff;
+            border-radius: 12px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .history-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .history-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .history-list {
+            padding: 0 20px;
+        }
+
+        .history-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .history-item:last-child {
+            border-bottom: none;
+        }
+
+        .history-date {
+            font-size: 14px;
+            color: #FF6B6B;
+            font-weight: 500;
+        }
+
+        .history-time {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .no-history {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        /* Модальное окно для добавления категории */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: flex-end;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            width: 100%;
+            border-radius: 20px 20px 0 0;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(100%);
+            }
+            to {
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .modal-header h3 {
+            font-size: 18px;
+            color: #333;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .category-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
+        .modal-footer {
+            padding: 20px;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            gap: 10px;
+        }
+
+        .modal-footer button {
+            flex: 1;
+            padding: 14px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .btn-cancel {
+            background: #f0f0f0;
+            border: none;
+            color: #666;
+        }
+
+        .btn-save {
+            background: #007AFF;
+            border: none;
+            color: white;
+        }
+
+        /* Нижняя навигация */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            max-width: 400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            background: #fff;
+            border-top: 1px solid #e0e0e0;
+            z-index: 100;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #999;
+            font-size: 12px;
+        }
+
+        .nav-item.active {
+            color: #007AFF;
+        }
+
+        .nav-item .icon {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="profile-container">
+        <!-- Шапка профиля -->
+        <div class="profile-header">
+            <button class="back-btn" onclick="history.back()">←</button>
+            <button class="edit-profile-btn" id="editProfileBtn">✎</button>
+            <div class="profile-avatar">
+                <span>👤</span>
+            </div>
+            <div class="profile-name" id="profileName">Екатерина</div>
+            <div class="profile-phone" id="profilePhone">+7 951 562-11-77</div>
+        </div>
+
+        <!-- Основной контент -->
+        <div class="profile-content">
+            <!-- Основная информация -->
+            <div class="info-section">
+                <div class="section-title">
+                    <span class="icon">📋</span>
+                    <span>Основная информация</span>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Имя</div>
+                    <div class="info-value" id="displayName">Екатерина</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Телефон</div>
+                    <div class="info-value" id="displayPhone">+7 951 562-11-77</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Email</div>
+                    <div class="info-value unknown" id="displayEmail">Неизвестно</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Пол</div>
+                    <div class="info-value unknown" id="displayGender">Неизвестно</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Дата рождения</div>
+                    <div class="info-value" id="displayBirthday">
+                        <input type="date" id="birthdayInput" class="date-input" style="display: none;">
+                        <span id="birthdayText">Не указано</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Категории -->
+            <div class="categories-section">
+                <div class="categories-header">
+                    <div class="categories-title">
+                        <span class="icon">🏷️</span>
+                        <span>Категории</span>
+                    </div>
+                    <button class="add-category-btn" id="addCategoryBtn">+</button>
+                </div>
+                <div class="categories-list" id="categoriesList">
+                    <!-- Категории будут здесь -->
+                </div>
+            </div>
+
+            <!-- Примечание -->
+            <div class="note-section">
+                <div class="note-header">
+                    <div class="note-title">
+                        <span class="icon">📝</span>
+                        <span>Примечание</span>
+                    </div>
+                    <button class="edit-note-btn" id="editNoteBtn">Редактировать</button>
+                </div>
+                <div class="note-content">
+                    <div class="note-text empty" id="noteText">Добавить примечание</div>
+                    <textarea class="note-textarea" id="noteTextarea" placeholder="Введите примечание..."></textarea>
+                    <div class="note-actions" id="noteActions">
+                        <button class="note-cancel-btn" id="cancelNoteBtn">Отмена</button>
+                        <button class="note-save-btn" id="saveNoteBtn">Сохранить</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- История записей -->
+            <div class="history-section">
+                <div class="history-header">
+                    <div class="history-title">
+                        <span class="icon">📅</span>
+                        <span>История записей</span>
+                    </div>
+                </div>
+                <div class="history-list" id="historyList">
+                    <div class="no-history">Нет записей</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Нижняя навигация -->
+        <div class="bottom-nav">
+            <button class="nav-item" data-page="journal">
+                <span class="icon">📋</span>
+                <span>Журнал</span>
+            </button>
+            <button class="nav-item" data-page="schedule">
+                <span class="icon">📅</span>
+                <span>График</span>
+            </button>
+            <button class="nav-item active" data-page="clients">
+                <span class="icon">👥</span>
+                <span>Клиенты</span>
+            </button>
+            <button class="nav-item" data-page="notifications">
+                <span class="icon">🔔</span>
+                <span>Уведомление</span>
+            </button>
+            <button class="nav-item" data-page="more">
+                <span class="icon">⋯</span>
+                <span>Еще</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Модальное окно для добавления категории -->
+    <div id="categoryModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Добавить категорию</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="text" class="category-input" id="newCategory" placeholder="Название категории">
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel close-modal">Отмена</button>
+                <button class="btn-save" id="saveCategoryBtn">Добавить</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        let clientId = {{ client_id|default(1) }};
+        let clientData = {};
+        let categories = [];
+        let note = '';
+        let isEditingNote = false;
+
+        $(document).ready(function() {
+            loadClientData();
+            loadClientHistory();
+
+            // Редактирование профиля
+            $('#editProfileBtn').click(function() {
+                editProfile();
+            });
+
+            // Добавление категории
+            $('#addCategoryBtn').click(function() {
+                showCategoryModal();
+            });
+
+            // Редактирование примечания
+            $('#editNoteBtn').click(function() {
+                startEditNote();
+            });
+
+            $('#cancelNoteBtn').click(function() {
+                cancelEditNote();
+            });
+
+            $('#saveNoteBtn').click(function() {
+                saveNote();
+            });
+
+            // Выбор даты рождения
+            $('#birthdayInput').change(function() {
+                const birthday = $(this).val();
+                updateClientField('birthday', birthday);
+            });
+
+            // Закрытие модального окна
+            $('.close-modal').click(function() {
+                $('#categoryModal').removeClass('show');
+            });
+
+            $('#saveCategoryBtn').click(function() {
+                addCategory();
+            });
+
+            // Навигация
+            $('.nav-item').click(function() {
+                const page = $(this).data('page');
+                if (page === 'journal') {
+                    window.location.href = '/';
+                } else if (page === 'schedule') {
+                    window.location.href = '/schedule';
+                } else if (page === 'clients') {
+                    window.location.href = '/clients';
+                } else if (page === 'notifications') {
+                    window.location.href = '/notifications';
+                }
+            });
+        });
+
+        function loadClientData() {
+            $.ajax({
+                url: `/api/clients/${clientId}`,
+                method: 'GET',
+                success: function(data) {
+                    clientData = data;
+                    updateUI();
+                }
+            });
+        }
+
+        function updateUI() {
+            $('#profileName').text(clientData.name || 'Не указано');
+            $('#profilePhone').text(clientData.phone || 'Не указано');
+            $('#displayName').text(clientData.name || 'Не указано');
+            $('#displayPhone').text(clientData.phone || 'Не указано');
+            $('#displayEmail').text(clientData.email || 'Неизвестно');
+            $('#displayGender').text(clientData.gender || 'Неизвестно');
+
+            if (clientData.birthday) {
+                $('#birthdayText').hide();
+                $('#birthdayInput').show();
+                $('#birthdayInput').val(clientData.birthday);
+            } else {
+                $('#birthdayText').show();
+                $('#birthdayInput').hide();
+            }
+
+            // Категории
+            categories = clientData.categories || [];
+            renderCategories();
+
+            // Примечание
+            note = clientData.note || '';
+            updateNoteDisplay();
+        }
+
+        function renderCategories() {
+            const $list = $('#categoriesList');
+            $list.empty();
+
+            if (categories.length === 0) {
+                $list.html('<span style="color: #ccc; font-size: 14px;">Нет категорий</span>');
+                return;
+            }
+
+            categories.forEach(category => {
+                $list.append(`
+                <div class="category-tag">
+                    <span>${escapeHtml(category)}</span>
+                    <button class="remove-category" onclick="removeCategory('${escapeHtml(category)}')">×</button>
+                </div>
+            `);
+            });
+        }
+
+        function updateNoteDisplay() {
+            if (note && note.trim()) {
+                $('#noteText').text(note).removeClass('empty');
+            } else {
+                $('#noteText').text('Добавить примечание').addClass('empty');
+            }
+            $('#noteTextarea').val(note);
+        }
+
+        function startEditNote() {
+            isEditingNote = true;
+            $('#noteText').hide();
+            $('#noteTextarea').show().focus();
+            $('#noteActions').show();
+            $('#editNoteBtn').hide();
+        }
+
+        function cancelEditNote() {
+            isEditingNote = false;
+            $('#noteText').show();
+            $('#noteTextarea').hide();
+            $('#noteActions').hide();
+            $('#editNoteBtn').show();
+        }
+
+        function saveNote() {
+            const newNote = $('#noteTextarea').val();
+            updateClientField('note', newNote);
+        }
+
+        function updateClientField(field, value) {
+            const updateData = {};
+            updateData[field] = value;
+
+            $.ajax({
+                url: `/api/clients/${clientId}`,
+                method: 'PUT',
+                contentType: 'application/json',
+                data: JSON.stringify(updateData),
+                success: function() {
+                    clientData[field] = value;
+                    if (field === 'note') {
+                        note = value;
+                        updateNoteDisplay();
+                        cancelEditNote();
+                    } else if (field === 'birthday') {
+                        $('#birthdayText').hide();
+                    }
+                }
+            });
+        }
+
+        function showCategoryModal() {
+            $('#categoryModal').addClass('show');
+            $('#newCategory').val('');
+        }
+
+        function addCategory() {
+            const category = $('#newCategory').val().trim();
+            if (!category) return;
+
+            $.ajax({
+                url: `/api/clients/${clientId}/categories`,
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ category: category }),
+                success: function() {
+                    categories.push(category);
+                    renderCategories();
+                    $('#categoryModal').removeClass('show');
+                }
+            });
+        }
+
+        window.removeCategory = function(category) {
+            $.ajax({
+                url: `/api/clients/${clientId}/categories`,
+                method: 'DELETE',
+                contentType: 'application/json',
+                data: JSON.stringify({ category: category }),
+                success: function() {
+                    const index = categories.indexOf(category);
+                    if (index > -1) {
+                        categories.splice(index, 1);
+                        renderCategories();
+                    }
+                }
+            });
+        };
+
+        function editProfile() {
+            const newName = prompt('Введите имя:', clientData.name);
+            if (newName && newName !== clientData.name) {
+                updateClientField('name', newName);
+            }
+
+            const newPhone = prompt('Введите телефон:', clientData.phone);
+            if (newPhone && newPhone !== clientData.phone) {
+                updateClientField('phone', newPhone);
+            }
+
+            const newEmail = prompt('Введите email:', clientData.email || '');
+            if (newEmail !== undefined && newEmail !== clientData.email) {
+                updateClientField('email', newEmail);
+            }
+
+            const newGender = prompt('Введите пол (М/Ж):', clientData.gender || '');
+            if (newGender !== undefined && newGender !== clientData.gender) {
+                updateClientField('gender', newGender);
+            }
+        }
+
+        function loadClientHistory() {
+            $.ajax({
+                url: `/api/clients/${clientId}/appointments`,
+                method: 'GET',
+                success: function(appointments) {
+                    renderHistory(appointments);
+                }
+            });
+        }
+
+        function renderHistory(appointments) {
+            const $list = $('#historyList');
+            $list.empty();
+
+            if (appointments.length === 0) {
+                $list.html('<div class="no-history">Нет записей</div>');
+                return;
+            }
+
+            appointments.forEach(apt => {
+                $list.append(`
+                <div class="history-item">
+                    <div class="history-date">${apt.date}</div>
+                    <div class="history-time">${apt.start_time}</div>
+                </div>
+            `);
+            });
+        }
+
+        function escapeHtml(text) {
+            return text.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+    </script>
+{% endblock %}

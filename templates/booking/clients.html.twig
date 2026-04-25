@@ -1,88 +1,263 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Клиенты</title>
-    <link rel="stylesheet" href="{{ asset('css/style.css') }}">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-</head>
-<body>
-<div class="app-container">
-    <!-- Заголовок с поиском -->
-    <div class="clients-header">
-        <h1>Клиенты</h1>
-        <div class="search-box">
-            <input type="text" id="clientSearch" placeholder="Поиск">
-            <span class="search-icon">🔍</span>
+{% extends 'base.html.twig' %}
+
+{% block title %}Клиенты{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .clients-container {
+            background: #fff;
+            min-height: 100vh;
+            padding-bottom: 70px;
+        }
+
+        .clients-header {
+            padding: 20px;
+            background: #fff;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .clients-header h1 {
+            font-size: 24px;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .search-box {
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 40px 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            font-size: 16px;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #007AFF;
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+        }
+
+        .clients-list {
+            padding: 0 20px;
+        }
+
+        .client-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .client-item:hover {
+            background-color: #f9f9f9;
+        }
+
+        .client-info {
+            flex: 1;
+        }
+
+        .client-name {
+            font-size: 16px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .client-phone {
+            font-size: 12px;
+            color: #999;
+            margin-top: 2px;
+        }
+
+        .client-arrow {
+            color: #ccc;
+            font-size: 18px;
+        }
+
+        .add-client-btn {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background-color: #007AFF;
+            color: white;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,122,255,0.3);
+            z-index: 100;
+        }
+
+        .add-client-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            max-width: 400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            background: #fff;
+            border-top: 1px solid #e0e0e0;
+            z-index: 100;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #999;
+            font-size: 12px;
+        }
+
+        .nav-item.active {
+            color: #007AFF;
+        }
+
+        .nav-item .icon {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="clients-container">
+        <div class="clients-header">
+            <h1>Клиенты</h1>
+            <div class="search-box">
+                <input type="text" id="clientSearch" placeholder="Поиск">
+                <span class="search-icon">🔍</span>
+            </div>
+        </div>
+
+        <div class="clients-list" id="clientsList">
+            {% for client in clients %}
+                <div class="client-item" data-id="{{ client.id }}" data-name="{{ client.name|lower }}" data-phone="{{ client.phone }}">
+                    <div class="client-info">
+                        <div class="client-name">{{ client.name }}</div>
+                        <div class="client-phone">{{ client.phone }}</div>
+                    </div>
+                    <div class="client-arrow">→</div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <button class="add-client-btn" id="addClientBtn">+</button>
+
+        <div class="bottom-nav">
+            <button class="nav-item" data-page="journal">
+                <span class="icon">📋</span>
+                <span>Журнал</span>
+            </button>
+            <button class="nav-item" data-page="schedule">
+                <span class="icon">📅</span>
+                <span>График</span>
+            </button>
+            <button class="nav-item active" data-page="clients">
+                <span class="icon">👥</span>
+                <span>Клиенты</span>
+            </button>
+            <button class="nav-item" data-page="notifications">
+                <span class="icon">🔔</span>
+                <span>Уведомление</span>
+            </button>
+            <button class="nav-item" data-page="more">
+                <span class="icon">⋯</span>
+                <span>Еще</span>
+            </button>
         </div>
     </div>
 
-    <!-- Список клиентов -->
-    <div class="clients-list">
-        {% for client in clients %}
-        <div class="client-item" data-name="{{ client.name|lower }}" data-phone="{{ client.phone }}">
-            <span class="client-name">{{ client.name }}</span>
-            <span class="client-phone">{{ client.phone }}</span>
-        </div>
-        {% endfor %}
-    </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Поиск клиентов
+            $('#clientSearch').on('input', function() {
+                const searchTerm = $(this).val().toLowerCase();
 
-    <!-- Кнопка добавления клиента -->
-    <button class="add-client-btn">+</button>
+                $('.client-item').each(function() {
+                    const name = $(this).data('name');
+                    const phone = $(this).data('phone');
 
-    <!-- Нижняя навигация -->
-    <div class="bottom-nav">
-        <button class="nav-item" data-page="journal">
-            <span class="icon">📋</span>
-            <span>Журнал</span>
-        </button>
-        <button class="nav-item" data-page="schedule">
-            <span class="icon">📅</span>
-            <span>График</span>
-        </button>
-        <button class="nav-item active" data-page="clients">
-            <span class="icon">👥</span>
-            <span>Клиенты</span>
-        </button>
-        <button class="nav-item" data-page="notifications">
-            <span class="icon">🔔</span>
-            <span>Уведомление</span>
-        </button>
-        <button class="nav-item" data-page="more">
-            <span class="icon">⋯</span>
-            <span>Еще</span>
-        </button>
-    </div>
-</div>
+                    if (name.includes(searchTerm) || phone.includes(searchTerm)) {
+                        $(this).show();
+                    } else {
+                        $(this).hide();
+                    }
+                });
+            });
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
-    $(document).ready(function() {
-        // Поиск клиентов
-        $('#clientSearch').on('input', function() {
-            const searchTerm = $(this).val().toLowerCase();
+            // Переход к профилю клиента
+            $('.client-item').click(function() {
+                const clientId = $(this).data('id');
+                window.location.href = `/client/${clientId}`;
+            });
 
-            $('.client-item').each(function() {
-                const name = $(this).data('name');
-                const phone = $(this).data('phone');
+            // Добавление клиента
+            $('#addClientBtn').click(function() {
+                const name = prompt('Введите имя клиента:');
+                if (!name) return;
 
-                if (name.includes(searchTerm) || phone.includes(searchTerm)) {
-                    $(this).show();
-                } else {
-                    $(this).hide();
+                const phone = prompt('Введите телефон клиента (+7XXXXXXXXXX):');
+                if (!phone) return;
+
+                $.ajax({
+                    url: '/api/clients',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ name: name, phone: phone }),
+                    success: function(response) {
+                        if (response.success) {
+                            window.location.reload();
+                        }
+                    },
+                    error: function() {
+                        alert('Ошибка при добавлении клиента');
+                    }
+                });
+            });
+
+            // Навигация
+            $('.nav-item').click(function() {
+                const page = $(this).data('page');
+                if (page === 'journal') {
+                    window.location.href = '/';
+                } else if (page === 'schedule') {
+                    window.location.href = '/schedule';
+                } else if (page === 'notifications') {
+                    window.location.href = '/notifications';
                 }
             });
         });
-
-        // Навигация
-        $('.nav-item').click(function() {
-            const page = $(this).data('page');
-            if (page === 'journal') {
-                window.location.href = '/';
-            }
-        });
-    });
-</script>
-</body>
-</html>
+    </script>
+{% endblock %}
