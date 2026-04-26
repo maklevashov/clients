@@ -1,0 +1,63 @@
+security:
+  # Хеширование паролей
+  password_hashers:
+    App\Entity\User:
+      algorithm: auto
+
+  # Провайдеры пользователей
+  providers:
+    app_user_provider:
+      entity:
+        class: App\Entity\User
+        property: email
+
+  # Firewall
+  firewalls:
+    dev:
+      pattern: ^/(_(profiler|wdt)|css|images|js)/
+      security: false
+
+    login:
+      pattern: ^/login
+      stateless: false
+      json_login:
+        check_path: /login_check
+        username_path: email
+        password_path: password
+        success_handler: lexik_jwt_authentication.handler.authentication_success
+        failure_handler: lexik_jwt_authentication.handler.authentication_failure
+
+    api:
+      pattern: ^/api
+      stateless: true
+      jwt: ~
+
+    main:
+      pattern: ^/
+      stateless: false
+      logout:
+        path: /logout
+        target: /login
+      form_login:
+        login_path: login
+        check_path: login
+        default_target_path: /
+        enable_csrf: true
+      remember_me:
+        secret: '%kernel.secret%'
+        lifetime: 604800
+        path: /
+
+  # Контроль доступа
+  access_control:
+    - { path: ^/login, roles: PUBLIC_ACCESS }
+    - { path: ^/register, roles: PUBLIC_ACCESS }
+    - { path: ^/api/register, roles: PUBLIC_ACCESS }
+    - { path: ^/api/login_check, roles: PUBLIC_ACCESS }
+    - { path: ^/api, roles: ROLE_USER }
+    - { path: ^/, roles: ROLE_USER }
+
+  # Роли
+  role_hierarchy:
+    ROLE_ADMIN: ROLE_USER
+    ROLE_SUPER_ADMIN: [ROLE_ADMIN, ROLE_ALLOWED_TO_SWITCH]
