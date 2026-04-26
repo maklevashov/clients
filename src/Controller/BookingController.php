@@ -321,4 +321,134 @@ class BookingController extends AbstractController
 
         return $this->json($data);
     }
+
+    #[Route('/schedule', name: 'app_schedule')]
+    public function schedule(EntityManagerInterface $entityManager): Response
+    {
+        $clients = $entityManager->getRepository(Client::class)->findBy([], ['name' => 'ASC']);
+
+        return $this->render('booking/schedule.html.twig', [
+            'clients' => $clients
+        ]);
+    }
+
+    #[Route('/api/appointments/all', name: 'api_all_appointments', methods: ['GET'])]
+    public function getAllAppointments(EntityManagerInterface $entityManager): JsonResponse
+    {
+        $appointments = $entityManager->getRepository(Appointment::class)
+            ->createQueryBuilder('a')
+            ->select('a.id', 'a.appointmentDate as date', 'a.startTime as start_time', 'a.endTime as end_time',
+                'c.id as client_id', 'c.name as client_name', 'c.phone as client_phone')
+            ->leftJoin('a.client', 'c')
+            ->orderBy('a.appointmentDate', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        $formatted = [];
+        foreach ($appointments as $appointment) {
+            $formatted[] = [
+                'id' => $appointment['id'],
+                'date' => $appointment['date']->format('Y-m-d'),
+                'start_time' => $appointment['start_time']->format('H:i'),
+                'end_time' => $appointment['end_time']->format('H:i'),
+                'client_id' => $appointment['client_id'],
+                'client_name' => $appointment['client_name'],
+                'client_phone' => $appointment['client_phone']
+            ];
+        }
+
+        return $this->json($formatted);
+    }
+
+    #[Route('/api/clients', name: 'api_clients_list', methods: ['GET'])]
+    public function getClientsList(EntityManagerInterface $entityManager): JsonResponse
+    {
+        $clients = $entityManager->getRepository(Client::class)->findBy([], ['name' => 'ASC']);
+
+        $data = array_map(function (Client $client) {
+            return [
+                'id' => $client->getId(),
+                'name' => $client->getName(),
+                'phone' => $client->getPhone()
+            ];
+        }, $clients);
+
+        return $this->json($data);
+    }
+
+
+    #[Route('/api/clients', name: 'api_clients', methods: ['GET'])]
+    public function getClients(EntityManagerInterface $entityManager): JsonResponse
+    {
+        $clients = $entityManager->getRepository(Client::class)->findBy([], ['name' => 'ASC']);
+
+        $data = [];
+        foreach ($clients as $client) {
+            $data[] = [
+                'id' => $client->getId(),
+                'name' => $client->getName(),
+                'phone' => $client->getPhone()
+            ];
+        }
+
+        return $this->json($data);
+    }
+
+
+// Добавить в существующий контроллер
+
+    #[Route('/api/notifications', name: 'api_notifications', methods: ['GET'])]
+    public function getNotifications(EntityManagerInterface $entityManager): JsonResponse
+    {
+        // Здесь можно генерировать уведомления из различных источников
+        $notifications = [];
+
+        // Получаем сегодняшние записи
+        $today = new \DateTime('today');
+        $appointments = $entityManager->getRepository(Appointment::class)
+            ->createQueryBuilder('a')
+            ->select('a', 'c')
+            ->leftJoin('a.client', 'c')
+            ->where('a.appointmentDate = :today')
+            ->setParameter('today', $today)
+            ->orderBy('a.startTime', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        foreach ($appointments as $appointment) {
+            $notifications[] = [
+                'id' => $appointment->getId(),
+                'type' => 'appointment',
+                'title' => 'Новая запись',
+                'message' => sprintf('%s записан(а) на %s %s',
+                    $appointment->getClient()->getName(),
+                    $appointment->getAppointmentDate()->format('d.m'),
+                    $appointment->getStartTime()->format('H:i')
+                ),
+                'created_at' => $appointment->getCreatedAt()->format('c'),
+                'read' => false
+            ];
+        }
+
+        // Сортируем по дате
+        usort($notifications, function ($a, $b) {
+            return strtotime($b['created_at']) - strtotime($a['created_at']);
+        });
+
+        return $this->json($notifications);
+    }
+
+    #[Route('/api/notifications/{id}/read', name: 'api_notification_read', methods: ['POST'])]
+    public function markNotificationRead(int $id): JsonResponse
+    {
+        // В реальном приложении здесь нужно сохранять статус прочтения в БД
+        return $this->json(['success' => true]);
+    }
+
+    #[Route('/api/notifications/mark-all-read', name: 'api_notifications_read_all', methods: ['POST'])]
+    public function markAllNotificationsRead(): JsonResponse
+    {
+        // В реальном приложении здесь нужно сохранять статус прочтения в БД
+        return $this->json(['success' => true]);
+    }
 }

@@ -1,0 +1,353 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Уведомления{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .notifications-container {
+            background: #fff;
+            min-height: 100vh;
+            padding-bottom: 70px;
+        }
+
+        .notifications-header {
+            padding: 20px;
+            background: #fff;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .notifications-header h1 {
+            font-size: 24px;
+            color: #333;
+        }
+
+        .mark-all-read {
+            background: none;
+            border: none;
+            color: #007AFF;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .notification-filters {
+            display: flex;
+            gap: 10px;
+            padding: 15px 20px;
+            background: #fff;
+            border-bottom: 1px solid #f0f0f0;
+            overflow-x: auto;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            background: #f5f5f5;
+            border: none;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .filter-btn.active {
+            background: #007AFF;
+            color: white;
+        }
+
+        .notifications-list {
+            padding: 0 20px;
+        }
+
+        .notification-item {
+            display: flex;
+            align-items: flex-start;
+            padding: 15px 0;
+            border-bottom: 1px solid #f0f0f0;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .notification-item.unread {
+            background: #f8f9ff;
+        }
+
+        .notification-item.unread::before {
+            content: '';
+            position: absolute;
+            left: -20px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 40px;
+            background: #007AFF;
+            border-radius: 2px;
+        }
+
+        .notification-icon {
+            width: 40px;
+            height: 40px;
+            background: #f0f0f0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+        }
+
+        .notification-icon .icon {
+            font-size: 20px;
+        }
+
+        .notification-content {
+            flex: 1;
+        }
+
+        .notification-title {
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .notification-message {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+
+        .notification-time {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .mark-read {
+            background: none;
+            border: none;
+            color: #007AFF;
+            font-size: 12px;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .notification-item:hover .mark-read {
+            opacity: 1;
+        }
+
+        .no-notifications {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            max-width: 400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            background: #fff;
+            border-top: 1px solid #e0e0e0;
+            z-index: 100;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #999;
+            font-size: 12px;
+        }
+
+        .nav-item.active {
+            color: #007AFF;
+        }
+
+        .nav-item .icon {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="notifications-container">
+        <div class="notifications-header">
+            <h1>Уведомления</h1>
+            <button class="mark-all-read" id="markAllRead">✓ Прочитать все</button>
+        </div>
+
+        <div class="notification-filters">
+            <button class="filter-btn active" data-filter="all">Все</button>
+            <button class="filter-btn" data-filter="unread">Непрочитанные</button>
+            <button class="filter-btn" data-filter="today">Сегодня</button>
+            <button class="filter-btn" data-filter="reminders">Напоминания</button>
+        </div>
+
+        <div class="notifications-list" id="notificationsList">
+            <!-- Уведомления будут загружены через AJAX -->
+            <div class="no-notifications">Загрузка...</div>
+        </div>
+
+        <div class="bottom-nav">
+            <button class="nav-item" data-page="journal">
+                <span class="icon">📋</span>
+                <span>Журнал</span>
+            </button>
+            <button class="nav-item" data-page="schedule">
+                <span class="icon">📅</span>
+                <span>График</span>
+            </button>
+            <button class="nav-item" data-page="clients">
+                <span class="icon">👥</span>
+                <span>Клиенты</span>
+            </button>
+            <button class="nav-item active" data-page="notifications">
+                <span class="icon">🔔</span>
+                <span>Уведомление</span>
+            </button>
+            <button class="nav-item" data-page="more">
+                <span class="icon">⋯</span>
+                <span>Еще</span>
+            </button>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        let currentFilter = 'all';
+        let notifications = [];
+
+        $(document).ready(function() {
+            loadNotifications();
+
+            // Фильтрация
+            $('.filter-btn').click(function() {
+                $('.filter-btn').removeClass('active');
+                $(this).addClass('active');
+                currentFilter = $(this).data('filter');
+                renderNotifications();
+            });
+
+            // Отметить все как прочитанные
+            $('#markAllRead').click(function() {
+                markAllAsRead();
+            });
+
+            // Навигация
+            $('.nav-item').click(function() {
+                const page = $(this).data('page');
+                if (page === 'journal') {
+                    window.location.href = '/';
+                } else if (page === 'schedule') {
+                    window.location.href = '/schedule';
+                } else if (page === 'clients') {
+                    window.location.href = '/clients';
+                }
+            });
+        });
+
+        function loadNotifications() {
+            $.ajax({
+                url: '/api/notifications',
+                method: 'GET',
+                success: function(data) {
+                    notifications = data;
+                    renderNotifications();
+                }
+            });
+        }
+
+        function renderNotifications() {
+            let filtered = notifications;
+
+            if (currentFilter === 'unread') {
+                filtered = notifications.filter(n => !n.read);
+            } else if (currentFilter === 'today') {
+                const today = new Date().toDateString();
+                filtered = notifications.filter(n => new Date(n.created_at).toDateString() === today);
+            } else if (currentFilter === 'reminders') {
+                filtered = notifications.filter(n => n.type === 'reminder');
+            }
+
+            if (filtered.length === 0) {
+                $('#notificationsList').html('<div class="no-notifications">Нет уведомлений</div>');
+                return;
+            }
+
+            let html = '';
+            filtered.forEach(notification => {
+                html += `
+                <div class="notification-item ${!notification.read ? 'unread' : ''}" data-id="${notification.id}">
+                    <div class="notification-icon">
+                        <span class="icon">${getIcon(notification.type)}</span>
+                    </div>
+                    <div class="notification-content">
+                        <div class="notification-title">${notification.title}</div>
+                        <div class="notification-message">${notification.message}</div>
+                        <div class="notification-time">${formatTime(notification.created_at)}</div>
+                    </div>
+                    ${!notification.read ? '<button class="mark-read" onclick="markAsRead(' + notification.id + ')">●</button>' : ''}
+                </div>
+            `;
+            });
+
+            $('#notificationsList').html(html);
+        }
+
+        function getIcon(type) {
+            const icons = {
+                'appointment': '📅',
+                'reminder': '⏰',
+                'client': '👤',
+                'system': '🔔'
+            };
+            return icons[type] || '📌';
+        }
+
+        function formatTime(dateStr) {
+            const date = new Date(dateStr);
+            const now = new Date();
+            const diff = Math.floor((now - date) / 1000 / 60);
+
+            if (diff < 1) return 'Только что';
+            if (diff < 60) return `${diff} минут назад`;
+            if (diff < 1440) return `${Math.floor(diff / 60)} часов назад`;
+            return `${Math.floor(diff / 1440)} дней назад`;
+        }
+
+        function markAsRead(id) {
+            $.ajax({
+                url: `/api/notifications/${id}/read`,
+                method: 'POST',
+                success: function() {
+                    const notification = notifications.find(n => n.id === id);
+                    if (notification) {
+                        notification.read = true;
+                        renderNotifications();
+                    }
+                }
+            });
+        }
+
+        function markAllAsRead() {
+            $.ajax({
+                url: '/api/notifications/mark-all-read',
+                method: 'POST',
+                success: function() {
+                    notifications.forEach(n => n.read = true);
+                    renderNotifications();
+                }
+            });
+        }
+    </script>
+{% endblock %}

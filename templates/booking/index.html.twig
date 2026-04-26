@@ -1,140 +1,752 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Запись клиентов</title>
-    <link rel="stylesheet" href="{{ asset('css/style.css') }}">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-</head>
-<body>
-<div class="app-container">
-    <!-- Верхняя панель с датой -->
-    <div class="header">
-        <div class="date-display">
-            <span class="time">{{ "now"|date("H:i") }}</span>
-            <span class="date">{{ "now"|date("d F")|replace({'January': 'января', 'February': 'февраля', 'March': 'марта', 'April': 'апреля', 'May': 'мая', 'June': 'июня', 'July': 'июля', 'August': 'августа', 'September': 'сентября', 'October': 'октября', 'November': 'ноября', 'December': 'декабря'}) }}</span>
-        </div>
-        <div class="user-name">Надежда</div>
-    </div>
+{% extends 'base.html.twig' %}
 
-    <!-- Расписание на день -->
-    <div class="schedule">
-        <div class="time-slots">
-            {% for hour in 8..16 %}
-            <div class="time-slot" data-hour="{{ hour }}">
-                <span class="time-label">{{ "%02d:00"|format(hour) }}</span>
-                <div class="slot-content" data-hour="{{ hour }}"></div>
+{% block title %}Журнал записей{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        /* Основные стили */
+        .app-container {
+            max-width: 400px;
+            margin: 0 auto;
+            background-color: #fff;
+            min-height: 100vh;
+            position: relative;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+
+        /* Header styles */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background-color: #fff;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .date-display {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .time {
+            font-size: 24px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .date {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-name {
+            font-size: 18px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .logout-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #999;
+            padding: 5px;
+        }
+
+        .logout-btn:hover {
+            color: #FF6B6B;
+        }
+
+        /* Schedule styles */
+        .schedule {
+            position: relative;
+            padding: 20px;
+            min-height: 500px;
+        }
+
+        .time-slots {
+            position: relative;
+        }
+
+        .time-slot {
+            display: flex;
+            align-items: flex-start;
+            min-height: 60px;
+            border-bottom: 1px solid #f0f0f0;
+            position: relative;
+        }
+
+        .time-label {
+            width: 50px;
+            font-size: 12px;
+            color: #999;
+            padding-top: 5px;
+        }
+
+        .slot-content {
+            flex: 1;
+            height: 60px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .slot-content:hover {
+            background-color: #f9f9f9;
+        }
+
+        /* Booking cards */
+        .current-bookings {
+            position: absolute;
+            top: 20px;
+            left: 70px;
+            right: 20px;
+            pointer-events: none;
+        }
+
+        .booking-card {
+            position: absolute;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, #FFE4E1 0%, #FFD4D1 100%);
+            border-left: 4px solid #FF6B6B;
+            border-radius: 8px;
+            padding: 12px;
+            pointer-events: auto;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+
+        .booking-card:hover {
+            transform: translateX(2px);
+        }
+
+        .booking-time {
+            font-size: 12px;
+            font-weight: 500;
+            color: #FF6B6B;
+            margin-bottom: 4px;
+        }
+
+        .booking-client {
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 2px;
+        }
+
+        .booking-phone {
+            font-size: 11px;
+            color: #666;
+        }
+
+        .delete-booking {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: none;
+            border: none;
+            font-size: 18px;
+            color: #999;
+            cursor: pointer;
+            padding: 0 4px;
+            transition: color 0.2s;
+        }
+
+        .delete-booking:hover {
+            color: #FF6B6B;
+        }
+
+        /* Week calendar */
+        .week-calendar {
+            display: flex;
+            justify-content: space-around;
+            padding: 15px 10px;
+            background-color: #fff;
+            border-top: 1px solid #e0e0e0;
+            border-bottom: 1px solid #e0e0e0;
+            overflow-x: auto;
+        }
+
+        .calendar-day {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            min-width: 50px;
+            transition: all 0.2s;
+        }
+
+        .calendar-day.active {
+            background: linear-gradient(135deg, #007AFF 0%, #0056b3 100%);
+            color: white;
+            box-shadow: 0 2px 8px rgba(0,122,255,0.3);
+        }
+
+        .calendar-day.active .day-name,
+        .calendar-day.active .day-number {
+            color: white;
+        }
+
+        .day-name {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+
+        .day-number {
+            font-size: 16px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        /* Bottom navigation */
+        .bottom-nav {
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            background-color: #fff;
+            border-top: 1px solid #e0e0e0;
+            position: sticky;
+            bottom: 0;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #999;
+            font-size: 11px;
+            padding: 8px;
+            transition: color 0.2s;
+        }
+
+        .nav-item.active {
+            color: #007AFF;
+        }
+
+        .nav-item:hover {
+            color: #007AFF;
+        }
+
+        .nav-item .icon {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: flex-end;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            position: relative;
+            background-color: #fff;
+            width: 100%;
+            border-radius: 20px 20px 0 0;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .modal-header h2 {
+            font-size: 20px;
+            color: #333;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: #999;
+            transition: color 0.2s;
+        }
+
+        .close-modal:hover {
+            color: #333;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #666;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #007AFF;
+        }
+
+        .modal-footer {
+            padding: 20px;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-submit {
+            flex: 1;
+            padding: 14px;
+            background: linear-gradient(135deg, #007AFF 0%, #0056b3 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-1px);
+        }
+
+        .btn-cancel {
+            flex: 1;
+            padding: 14px;
+            background: #f0f0f0;
+            color: #666;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        /* Loading spinner */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .no-appointments {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        /* Floating action button */
+        .fab-add {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #007AFF 0%, #0056b3 100%);
+            color: white;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,122,255,0.4);
+            z-index: 100;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .fab-add:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 16px rgba(0,122,255,0.5);
+        }
+
+        /* Responsive */
+        @media (max-width: 400px) {
+            .app-container {
+                max-width: 100%;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="app-container">
+        <!-- Верхняя панель -->
+        <div class="header">
+            <div class="date-display">
+                <span class="time" id="currentTime">{{ "now"|date("H:i") }}</span>
+                <span class="date" id="currentDate">{{ "now"|date("d F")|replace({'January': 'января', 'February': 'февраля', 'March': 'марта', 'April': 'апреля', 'May': 'мая', 'June': 'июня', 'July': 'июля', 'August': 'августа', 'September': 'сентября', 'October': 'октября', 'November': 'ноября', 'December': 'декабря'}) }}</span>
             </div>
-            {% endfor %}
-        </div>
-
-        <!-- Текущие записи -->
-        <div class="current-bookings">
-            {% for appointment in appointments %}
-            <div class="booking-card" data-appointment-id="{{ appointment.id }}"
-                 data-start="{{ appointment.startTime|date('H') }}"
-                 style="top: {{ (appointment.startTime|date('H') - 8) * 60 + appointment.startTime|date('i') }}px; height: 180px;">
-                <div class="booking-time">{{ appointment.startTime|date('H:i') }}-{{ appointment.endTime|date('H:i') }}</div>
-                <div class="booking-client">{{ appointment.client.name }}</div>
-                <div class="booking-phone">{{ appointment.client.phone }}</div>
-                <button class="delete-booking" onclick="deleteAppointment({{ appointment.id }})">×</button>
+            <div class="user-info">
+                <span class="user-name">{{ app.user.name }}</span>
+                <button class="logout-btn" id="logoutBtn" title="Выйти">🚪</button>
             </div>
-            {% endfor %}
         </div>
-    </div>
 
-    <!-- Календарь недели -->
-    <div class="week-calendar">
-        {% set days = ['ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'Сб', 'ВС'] %}
-        {% set current_date = "now"|date("d")|number_format %}
+        <!-- Расписание на день -->
+        <div class="schedule">
+            <div class="time-slots">
+                {% for hour in 8..19 %}
+                    <div class="time-slot">
+                        <span class="time-label">{{ "%02d:00"|format(hour) }}</span>
+                        <div class="slot-content" data-hour="{{ hour }}"></div>
+                    </div>
+                {% endfor %}
+            </div>
 
-        {% for i in 0..6 %}
-        {% set day_date = date("now")|date_modify("+" ~ i ~ " days") %}
-        <div class="calendar-day {{ day_date|date('d') == current_date ? 'active' : '' }}" data-date="{{ day_date|date('Y-m-d') }}">
-            <span class="day-name">{{ days[i] }}</span>
-            <span class="day-number">{{ day_date|date('d') }}</span>
+            <div class="current-bookings" id="currentBookings">
+                <!-- Записи будут загружены через JavaScript -->
+            </div>
         </div>
-        {% endfor %}
-    </div>
 
-    <!-- Нижняя навигация -->
-    <div class="bottom-nav">
-        <button class="nav-item active" data-page="journal">
-            <span class="icon">📋</span>
-            <span>Журнал</span>
-        </button>
-        <button class="nav-item" data-page="schedule">
-            <span class="icon">📅</span>
-            <span>График</span>
-        </button>
-        <button class="nav-item" data-page="clients">
-            <span class="icon">👥</span>
-            <span>Клиенты</span>
-        </button>
-        <button class="nav-item" data-page="notifications">
-            <span class="icon">🔔</span>
-            <span>Уведомление</span>
-        </button>
-        <button class="nav-item" data-page="more">
-            <span class="icon">⋯</span>
-            <span>Еще</span>
-        </button>
+        <!-- Календарь недели -->
+        <div class="week-calendar" id="weekCalendar">
+            <!-- Календарь будет сгенерирован через JavaScript -->
+        </div>
+
+        <!-- Кнопка добавления -->
+        <button class="fab-add" id="fabAddBtn">+</button>
+
+        <!-- Нижняя навигация -->
+        <div class="bottom-nav">
+            <button class="nav-item active" data-page="journal">
+                <span class="icon">📋</span>
+                <span>Журнал</span>
+            </button>
+            <button class="nav-item" data-page="schedule">
+                <span class="icon">📅</span>
+                <span>График</span>
+            </button>
+            <button class="nav-item" data-page="clients">
+                <span class="icon">👥</span>
+                <span>Клиенты</span>
+            </button>
+            <button class="nav-item" data-page="notifications">
+                <span class="icon">🔔</span>
+                <span>Уведомление</span>
+            </button>
+            <button class="nav-item" data-page="profile">
+                <span class="icon">👤</span>
+                <span>Профиль</span>
+            </button>
+        </div>
     </div>
 
     <!-- Модальное окно для создания записи -->
-    <div id="bookingModal" class="modal">
+    <div id="appointmentModal" class="modal">
         <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>Новая запись</h2>
-            <form id="bookingForm">
-                <div class="form-group">
-                    <label for="client">Клиент:</label>
-                    <select id="client" name="client_id" required>
-                        <option value="">Выберите клиента</option>
-                        {% for client in clients %}
-                        <option value="{{ client.id }}">{{ client.name }} - {{ client.phone }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="date">Дата:</label>
-                    <input type="date" id="date" name="date" required>
-                </div>
-                <div class="form-group">
-                    <label for="time">Время:</label>
-                    <select id="time" name="time" required>
-                        {% for hour in 8..16 %}
-                        <option value="{{ "%02d:00"|format(hour) }}">{{ "%02d:00"|format(hour) }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <button type="submit" class="btn-submit">Создать запись</button>
-            </form>
+            <div class="modal-header">
+                <h2>Новая запись</h2>
+                <button class="close-modal" onclick="closeModal('appointmentModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="appointmentForm">
+                    <div class="form-group">
+                        <label for="clientSelect">Клиент:</label>
+                        <select id="clientSelect" required>
+                            <option value="">Выберите клиента</option>
+                            {% for client in clients %}
+                                <option value="{{ client.id }}">{{ client.name }} - {{ client.phone }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="appointmentDate">Дата:</label>
+                        <input type="date" id="appointmentDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="appointmentTime">Время:</label>
+                        <select id="appointmentTime" required>
+                            <option value="08:00">08:00 - 11:00</option>
+                            <option value="09:00">09:00 - 12:00</option>
+                            <option value="10:00">10:00 - 13:00</option>
+                            <option value="11:00">11:00 - 14:00</option>
+                            <option value="12:00">12:00 - 15:00</option>
+                            <option value="13:00">13:00 - 16:00</option>
+                            <option value="14:00">14:00 - 17:00</option>
+                            <option value="15:00">15:00 - 18:00</option>
+                            <option value="16:00">16:00 - 19:00</option>
+                            <option value="17:00">17:00 - 20:00</option>
+                            <option value="18:00">18:00 - 21:00</option>
+                            <option value="19:00">19:00 - 22:00</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="closeModal('appointmentModal')">Отмена</button>
+                <button class="btn-submit" onclick="createAppointment()">Создать</button>
+            </div>
         </div>
     </div>
 
-    <!-- Модальное окно для добавления клиента -->
-    <div id="clientModal" class="modal">
-        <div class="modal-content">
-            <span class="close-client">&times;</span>
-            <h2>Новый клиент</h2>
-            <form id="clientForm">
-                <div class="form-group">
-                    <label for="client_name">Имя:</label>
-                    <input type="text" id="client_name" name="name" required>
-                </div>
-                <div class="form-group">
-                    <label for="client_phone">Телефон:</label>
-                    <input type="tel" id="client_phone" name="phone" required pattern="\+7[0-9]{10}" placeholder="+7XXXXXXXXXX">
-                </div>
-                <button type="submit" class="btn-submit">Добавить клиента</button>
-            </form>
-        </div>
-    </div>
-</div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        let currentDate = new Date();
+        let selectedDate = new Date();
+        let currentUser = {{ app.user.id }};
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="{{ asset('js/booking.js') }}"></script>
-</body>
-</html>
+        // Инициализация
+        $(document).ready(function() {
+            initTimeUpdate();
+            renderWeekCalendar();
+            loadAppointments(selectedDate);
+
+            // Обработчики событий
+            $('#fabAddBtn').click(function() {
+                showAppointmentModal();
+            });
+
+            $('#logoutBtn').click(function() {
+                if (confirm('Вы уверены, что хотите выйти?')) {
+                    window.location.href = '/logout';
+                }
+            });
+
+            // Навигация
+            $('.nav-item').click(function() {
+                const page = $(this).data('page');
+                switch(page) {
+                    case 'journal':
+                        window.location.href = '/';
+                        break;
+                    case 'schedule':
+                        window.location.href = '/schedule';
+                        break;
+                    case 'clients':
+                        window.location.href = '/clients';
+                        break;
+                    case 'notifications':
+                        window.location.href = '/notifications';
+                        break;
+                    case 'profile':
+                        window.location.href = '/profile';
+                        break;
+                }
+            });
+
+            // Клик по временному слоту
+            $(document).on('click', '.slot-content', function() {
+                const hour = $(this).data('hour');
+                $('#appointmentTime').val(`${hour.toString().padStart(2, '0')}:00`);
+                showAppointmentModal();
+            });
+        });
+
+        // Обновление времени
+        function initTimeUpdate() {
+            updateTime();
+            setInterval(updateTime, 1000);
+        }
+
+        function updateTime() {
+            const now = new Date();
+            $('#currentTime').text(now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }));
+        }
+
+        // Рендер календаря недели
+        function renderWeekCalendar() {
+            const days = ['ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'Сб', 'ВС'];
+            const today = new Date();
+            const startOfWeek = new Date(today);
+            startOfWeek.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1));
+
+            let html = '';
+            for (let i = 0; i < 7; i++) {
+                const date = new Date(startOfWeek);
+                date.setDate(startOfWeek.getDate() + i);
+                const isToday = date.toDateString() === today.toDateString();
+                const isSelected = date.toDateString() === selectedDate.toDateString();
+
+                html += `
+                <div class="calendar-day ${isSelected ? 'active' : ''}" data-date="${date.toISOString().split('T')[0]}">
+                    <span class="day-name">${days[i]}</span>
+                    <span class="day-number">${date.getDate()}</span>
+                </div>
+            `;
+            }
+
+            $('#weekCalendar').html(html);
+
+            // Обработчик клика по дню
+            $('.calendar-day').click(function() {
+                $('.calendar-day').removeClass('active');
+                $(this).addClass('active');
+                selectedDate = new Date($(this).data('date'));
+                loadAppointments(selectedDate);
+            });
+        }
+
+        // Загрузка записей
+        function loadAppointments(date) {
+            const dateStr = date.toISOString().split('T')[0];
+
+            $.ajax({
+                url: `/api/appointments?date=${dateStr}`,
+                method: 'GET',
+                success: function(appointments) {
+                    renderAppointments(appointments);
+                },
+                error: function() {
+                    $('#currentBookings').html('<div class="no-appointments">Ошибка загрузки записей</div>');
+                }
+            });
+        }
+
+        // Отображение записей
+        function renderAppointments(appointments) {
+            if (appointments.length === 0) {
+                $('#currentBookings').html('<div class="no-appointments">Нет записей на этот день</div>');
+                return;
+            }
+
+            let html = '';
+            appointments.forEach(apt => {
+                const hour = parseInt(apt.start_time.split(':')[0]);
+                const topPosition = (hour - 8) * 60;
+
+                html += `
+                <div class="booking-card" data-id="${apt.id}" style="top: ${topPosition}px; height: 180px;">
+                    <div class="booking-time">${apt.start_time} - ${apt.end_time}</div>
+                    <div class="booking-client">${escapeHtml(apt.client_name)}</div>
+                    <div class="booking-phone">${escapeHtml(apt.client_phone)}</div>
+                    <button class="delete-booking" onclick="deleteAppointment(${apt.id})">×</button>
+                </div>
+            `;
+            });
+
+            $('#currentBookings').html(html);
+        }
+
+        // Показать модальное окно
+        function showAppointmentModal() {
+            const dateStr = selectedDate.toISOString().split('T')[0];
+            $('#appointmentDate').val(dateStr);
+            $('#appointmentModal').addClass('show');
+        }
+
+        // Закрыть модальное окно
+        window.closeModal = function(modalId) {
+            $(`#${modalId}`).removeClass('show');
+        };
+
+        // Создание записи
+        window.createAppointment = function() {
+            const clientId = $('#clientSelect').val();
+            const date = $('#appointmentDate').val();
+            const time = $('#appointmentTime').val();
+
+            if (!clientId) {
+                alert('Выберите клиента');
+                return;
+            }
+
+            $.ajax({
+                url: '/api/appointments',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    client_id: clientId,
+                    date: date,
+                    start_time: time
+                }),
+                success: function() {
+                    closeModal('appointmentModal');
+                    loadAppointments(selectedDate);
+                    $('#appointmentForm')[0].reset();
+                },
+                error: function(xhr) {
+                    alert('Ошибка: ' + (xhr.responseJSON?.error || 'Не удалось создать запись'));
+                }
+            });
+        };
+
+        // Удаление записи
+        window.deleteAppointment = function(id) {
+            if (confirm('Удалить эту запись?')) {
+                $.ajax({
+                    url: `/api/appointments/${id}`,
+                    method: 'DELETE',
+                    success: function() {
+                        loadAppointments(selectedDate);
+                    },
+                    error: function() {
+                        alert('Ошибка при удалении записи');
+                    }
+                });
+            }
+        };
+
+        // Защита от XSS
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Обновление при изменении видимости страницы
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden) {
+                loadAppointments(selectedDate);
+                renderWeekCalendar();
+            }
+        });
+    </script>
+{% endblock %}
