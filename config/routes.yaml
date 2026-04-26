@@ -1,7 +1,47 @@
-controllers:
-    resource:
-        path: ../src/Controller/
-        namespace: App\Controller
-    type: attribute
+# config/routes.yaml
+
+# Основные маршруты аутентификации
+app_login:
+    path: /login
+    controller: App\Controller\AuthController::login
+
+app_register:
+    path: /register
+    controller: App\Controller\AuthController::register
+
+app_logout:
+    path: /logout
+    controller: App\Controller\AuthController::logout
+
+# API маршруты (если используете JWT)
 api_login_check:
-        path: /api/login_check
+    path: /api/login_check
+
+# Главная страница
+app_home:
+    path: /
+    controller: App\Controller\BookingController::index
+
+app_booking:
+    path: /booking
+    controller: App\Controller\BookingController::index
+
+# Страница клиентов
+app_clients:
+    path: /clients
+    controller: App\Controller\BookingController::clients
+
+# Страница расписания
+app_schedule:
+    path: /schedule
+    controller: App\Controller\BookingController::schedule
+
+# Страница уведомлений
+app_notifications:
+    path: /notifications
+    controller: App\Controller\BookingController::notifications
+
+# Профиль клиента
+app_client_profile:
+    path: /client/{id}
+    controller: App\Controller\BookingController::clientProfile
