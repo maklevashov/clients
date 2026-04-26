@@ -27,6 +27,10 @@ class Client
     #[ORM\Column(type: 'json', nullable: true)]
     private ?array $metadata = [];
 
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?User $user = null;
+
     #[ORM\OneToMany(mappedBy: 'client', targetEntity: Appointment::class, cascade: ['persist', 'remove'])]
     private Collection $appointments;
 
@@ -106,6 +110,17 @@ class Client
             }
         }
 
+        return $this;
+    }
+
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
+
+    public function setUser(?User $user): static
+    {
+        $this->user = $user;
         return $this;
     }
 }

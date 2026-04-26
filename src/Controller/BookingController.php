@@ -4,29 +4,38 @@ namespace App\Controller;
 
 use App\Entity\Client;
 use App\Entity\Appointment;
+use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
+#[Route('/')]
+#[IsGranted('ROLE_USER')]
 class BookingController extends AbstractController
 {
     #[Route('/', name: 'app_booking')]
     public function index(EntityManagerInterface $entityManager): Response
     {
+        $user = $this->getUser();
+
         $appointments = $entityManager->getRepository(Appointment::class)
             ->createQueryBuilder('a')
             ->select('a', 'c')
             ->leftJoin('a.client', 'c')
             ->where('a.appointmentDate = :today')
+            ->andWhere('a.user = :user')
             ->setParameter('today', new \DateTime('today'))
+            ->setParameter('user', $user)
             ->orderBy('a.startTime', 'ASC')
             ->getQuery()
             ->getResult();
 
-        $clients = $entityManager->getRepository(Client::class)->findBy([], ['name' => 'ASC']);
+        $clients = $entityManager->getRepository(Client::class)
+            ->findBy(['user' => $user], ['name' => 'ASC']);
 
         return $this->render('booking/index.html.twig', [
             'appointments' => $appointments,
@@ -34,6 +43,43 @@ class BookingController extends AbstractController
             'current_date' => new \DateTime()
         ]);
     }
+
+    // todo Все остальные методы также должны проверять принадлежность данных пользователю
+    // Пример для создания записи:
+
+//    #[Route('/api/appointments', name: 'api_create_appointment', methods: ['POST'])]
+//    public function createAppointment(Request $request, EntityManagerInterface $entityManager): JsonResponse
+//    {
+//        $user = $this->getUser();
+//        $data = json_decode($request->getContent(), true);
+//
+//        try {
+//            $client = $entityManager->getRepository(Client::class)
+//                ->findOneBy(['id' => $data['client_id'], 'user' => $user]);
+//
+//            if (!$client) {
+//                return $this->json(['error' => 'Клиент не найден'], 404);
+//            }
+//
+//            $startTime = new \DateTime($data['start_time']);
+//            $endTime = (clone $startTime)->modify('+3 hours');
+//
+//            $appointment = new Appointment();
+//            $appointment->setClient($client);
+//            $appointment->setUser($user);
+//            $appointment->setAppointmentDate(new \DateTime($data['date']));
+//            $appointment->setStartTime($startTime);
+//            $appointment->setEndTime($endTime);
+//
+//            $entityManager->persist($appointment);
+//            $entityManager->flush();
+//
+//            return $this->json(['success' => true, 'id' => $appointment->getId()]);
+//        } catch (\Exception $e) {
+//            return $this->json(['error' => $e->getMessage()], 500);
+//        }
+//    }
+
 
     #[Route('/clients', name: 'app_clients')]
     public function clients(EntityManagerInterface $entityManager): Response
