@@ -45,3 +45,12 @@ app_notifications:
 app_client_profile:
     path: /client/{id}
     controller: App\Controller\BookingController::clientProfile
+
+api_create_client:
+    path: /api/clients
+    controller: App\Controller\BookingController::createClient
+
+api_update_client:
+    path: /api/clients/{id}
+    controller: App\Controller\BookingController::updateClient
+
