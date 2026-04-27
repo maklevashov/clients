@@ -29,15 +29,13 @@ class BookingController extends AbstractController
             ->select('a', 'c')
             ->leftJoin('a.client', 'c')
             ->where('a.appointmentDate = :today')
-            ->andWhere('a.user = :user')
             ->setParameter('today', new \DateTime('today'))
-            ->setParameter('user', $user)
             ->orderBy('a.startTime', 'ASC')
             ->getQuery()
             ->getResult();
 
         $clients = $entityManager->getRepository(Client::class)
-            ->findBy(['user' => $user], ['name' => 'ASC']);
+            ->findBy([], ['name' => 'ASC']);
 
         return $this->render('booking/index.html.twig', [
             'appointments' => $appointments,
