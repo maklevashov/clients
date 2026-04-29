@@ -438,3 +438,178 @@ body {
         font-size: 12px;
     }
 }
+
+/* Контейнер календаря недели */
+.week-calendar-container {
+    position: relative;
+    background: #fff;
+    padding: 15px 10px;
+    border-top: 1px solid #e0e0e0;
+    border-bottom: 1px solid #e0e0e0;
+    overflow: hidden;
+}
+
+/* Навигация по неделям */
+.week-navigation {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding: 0 10px;
+}
+
+.week-nav-btn {
+    background: none;
+    border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #007AFF;
+    font-size: 18px;
+    transition: all 0.2s;
+}
+
+.week-nav-btn:active {
+    background: #f0f0f0;
+    transform: scale(0.95);
+}
+
+.week-info {
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+}
+
+/* Календарь недели */
+.week-calendar {
+    display: flex;
+    justify-content: space-around;
+    gap: 5px;
+    touch-action: pan-y pinch-zoom; /* Разрешаем вертикальный скролл, блокируем горизонтальный */
+    cursor: grab;
+}
+
+.week-calendar:active {
+    cursor: grabbing;
+}
+
+.calendar-day {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px 4px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 44px;
+    background: #fff;
+}
+
+.calendar-day:active {
+    transform: scale(0.95);
+}
+
+.calendar-day.active {
+    background: linear-gradient(135deg, #007AFF 0%, #5856D6 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(0,122,255,0.3);
+}
+
+.calendar-day.today {
+    border: 1px solid #007AFF;
+}
+
+.calendar-day.active .day-name,
+.calendar-day.active .day-number {
+    color: white;
+}
+
+.calendar-day.has-appointments {
+    position: relative;
+}
+
+.calendar-day.has-appointments::after {
+    content: '';
+    position: absolute;
+    bottom: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 4px;
+    background: #FF6B6B;
+    border-radius: 50%;
+}
+
+.calendar-day.active.has-appointments::after {
+    background: white;
+}
+
+.day-name {
+    font-size: 11px;
+    color: #666;
+    margin-bottom: 4px;
+}
+
+.day-number {
+    font-size: 16px;
+    font-weight: 500;
+    color: #333;
+}
+
+/* Кнопка "Сегодня" */
+.today-btn {
+    position: absolute;
+    bottom: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #007AFF;
+    color: white;
+    border: none;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,122,255,0.3);
+    transition: all 0.2s;
+    z-index: 10;
+    white-space: nowrap;
+}
+
+.today-btn:active {
+    transform: translateX(-50%) scale(0.95);
+}
+
+/* Анимации свайпов */
+.week-calendar.swipe-animation {
+    transition: transform 0.3s ease;
+}
+
+.week-calendar.swipe-left {
+    transform: translateX(-20px);
+}
+
+.week-calendar.swipe-right {
+    transform: translateX(20px);
+}
+
+/* Десктопные стили */
+@media (min-width: 768px) {
+    .calendar-day:hover {
+        background: #f5f5f5;
+        transform: translateY(-2px);
+    }
+
+    .calendar-day.active:hover {
+        background: linear-gradient(135deg, #007AFF 0%, #5856D6 100%);
+    }
+
+    .week-nav-btn:hover {
+        background: #f0f0f0;
+    }
+}

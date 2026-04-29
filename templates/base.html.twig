@@ -29,6 +29,7 @@
 {% block javascripts %}
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="{{ asset('js/booking.js') }}"></script>
+    <script src="{{ asset('js/main.js') }}"></script>
     <script>
         // Регистрация Service Worker
         if ('serviceWorker' in navigator) {
@@ -44,6 +45,13 @@
         // Предотвращение случайного закрытия
         window.addEventListener('beforeunload', function(e) {
             // Можно добавить проверку на несохраненные изменения
+        });
+        // Инициализация после загрузки DOM
+        document.addEventListener('DOMContentLoaded', function() {
+            // Инициализация календаря со свайпами
+            if (typeof initWeekCalendarWithSwipe === 'function') {
+                initWeekCalendarWithSwipe();
+            }
         });
     </script>
 {% endblock %}

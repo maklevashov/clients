@@ -456,8 +456,20 @@
         </div>
 
         <!-- Календарь недели -->
-        <div class="week-calendar" id="weekCalendar">
-            <!-- Календарь будет сгенерирован через JavaScript -->
+        <div class="week-calendar-container">
+            <div class="week-navigation">
+                <button class="week-nav-btn" id="prevWeekBtn" title="Предыдущая неделя">
+                    <span class="arrow">←</span>
+                </button>
+                <div class="week-info" id="weekInfo"></div>
+                <button class="week-nav-btn" id="nextWeekBtn" title="Следующая неделя">
+                    <span class="arrow">→</span>
+                </button>
+            </div>
+            <div class="week-calendar" id="weekCalendar">
+                <!-- Дни недели будут добавлены через JavaScript -->
+            </div>
+            <button class="today-btn" id="todayBtn">Сегодня</button>
         </div>
 
         <!-- Кнопка добавления -->
@@ -748,5 +760,266 @@
                 renderWeekCalendar();
             }
         });
+        // Добавить в существующий файл booking.js
+
+        // Класс для обработки свайпов
+        class SwipeHandler {
+            constructor(element, callbacks) {
+                this.element = element;
+                this.callbacks = callbacks;
+                this.startX = 0;
+                this.startY = 0;
+                this.distX = 0;
+                this.distY = 0;
+                this.threshold = 50; // минимальное расстояние для свайпа
+                this.restraint = 100; // максимальное вертикальное отклонение
+                this.allowedTime = 500; // максимальное время для свайпа в мс
+                this.startTime = 0;
+
+                this.init();
+            }
+
+            init() {
+                this.element.addEventListener('touchstart', this.handleTouchStart.bind(this), false);
+                this.element.addEventListener('touchmove', this.handleTouchMove.bind(this), false);
+                this.element.addEventListener('touchend', this.handleTouchEnd.bind(this), false);
+            }
+
+            handleTouchStart(e) {
+                const touch = e.touches[0];
+                this.startX = touch.clientX;
+                this.startY = touch.clientY;
+                this.startTime = Date.now();
+            }
+
+            handleTouchMove(e) {
+                const touch = e.touches[0];
+                this.distX = touch.clientX - this.startX;
+                this.distY = touch.clientY - this.startY;
+
+                // Предотвращаем прокрутку страницы при горизонтальном свайпе
+                if (Math.abs(this.distX) > Math.abs(this.distY) && Math.abs(this.distX) > 10) {
+                    e.preventDefault();
+                }
+            }
+
+            handleTouchEnd(e) {
+                const elapsedTime = Date.now() - this.startTime;
+
+                if (elapsedTime <= this.allowedTime &&
+                    Math.abs(this.distX) >= this.threshold &&
+                    Math.abs(this.distY) <= this.restraint) {
+
+                    if (this.distX > 0) {
+                        // Свайп вправо - предыдущая неделя
+                        if (this.callbacks.onSwipeRight) {
+                            this.callbacks.onSwipeRight();
+                        }
+                    } else if (this.distX < 0) {
+                        // Свайп влево - следующая неделя
+                        if (this.callbacks.onSwipeLeft) {
+                            this.callbacks.onSwipeLeft();
+                        }
+                    }
+                }
+
+                // Сброс
+                this.distX = 0;
+                this.distY = 0;
+            }
+        }
+
+        // Глобальные переменные для календаря
+        let currentWeekOffset = 0;
+        let currentWeekDays = [];
+
+        // Инициализация календаря недели со свайпами
+        function initWeekCalendarWithSwipe() {
+            updateWeekCalendar();
+
+            // Добавляем обработку свайпов для календаря недели
+            const weekCalendar = document.querySelector('.week-calendar');
+            if (weekCalendar) {
+                new SwipeHandler(weekCalendar, {
+                    onSwipeLeft: () => {
+                        // Свайп влево - следующая неделя
+                        currentWeekOffset++;
+                        updateWeekCalendar();
+                        animateCalendarSlide('left');
+                    },
+                    onSwipeRight: () => {
+                        // Свайп вправо - предыдущая неделя
+                        currentWeekOffset--;
+                        updateWeekCalendar();
+                        animateCalendarSlide('right');
+                    }
+                });
+            }
+
+            // Добавляем поддержку колесика мыши для десктопа
+            if (weekCalendar) {
+                weekCalendar.addEventListener('wheel', (e) => {
+                    if (Math.abs(e.deltaX) > 10) {
+                        e.preventDefault();
+                        if (e.deltaX > 0) {
+                            currentWeekOffset++;
+                        } else {
+                            currentWeekOffset--;
+                        }
+                        updateWeekCalendar();
+                        animateCalendarSlide(e.deltaX > 0 ? 'left' : 'right');
+                    }
+                });
+            }
+        }
+
+        // Обновление календаря недели
+        function updateWeekCalendar() {
+            const today = new Date();
+            const startOfWeek = new Date(today);
+
+            // Смещение недели
+            startOfWeek.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1) + (currentWeekOffset * 7));
+
+            const days = ['ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'Сб', 'ВС'];
+            const weekDays = [];
+            let html = '';
+
+            for (let i = 0; i < 7; i++) {
+                const date = new Date(startOfWeek);
+                date.setDate(startOfWeek.getDate() + i);
+                const isToday = date.toDateString() === today.toDateString();
+                const isSelected = window.selectedDate && date.toDateString() === window.selectedDate.toDateString();
+                const dateStr = formatDate(date);
+
+                weekDays.push(date);
+
+                html += `
+            <div class="calendar-day ${isSelected ? 'active' : ''} ${isToday ? 'today' : ''}"
+                 data-date="${dateStr}"
+                 data-index="${i}">
+                <span class="day-name">${days[i]}</span>
+                <span class="day-number">${date.getDate()}</span>
+            </div>
+        `;
+            }
+
+            currentWeekDays = weekDays;
+
+            const weekCalendar = document.querySelector('.week-calendar');
+            if (weekCalendar) {
+                weekCalendar.innerHTML = html;
+
+                // Добавляем обработчики кликов
+                document.querySelectorAll('.calendar-day').forEach(day => {
+                    day.addEventListener('click', () => {
+                        const dateStr = day.dataset.date;
+                        if (dateStr) {
+                            selectDate(new Date(dateStr));
+                        }
+                    });
+                });
+            }
+
+            // Обновляем отображение недели
+            updateWeekInfo(startOfWeek);
+        }
+
+        // Обновление информации о текущей неделе
+        function updateWeekInfo(startOfWeek) {
+            const endOfWeek = new Date(startOfWeek);
+            endOfWeek.setDate(startOfWeek.getDate() + 6);
+
+            const weekInfo = document.getElementById('weekInfo');
+            if (weekInfo) {
+                const startMonth = startOfWeek.toLocaleString('ru', { month: 'short' });
+                const endMonth = endOfWeek.toLocaleString('ru', { month: 'short' });
+
+                if (startMonth === endMonth) {
+                    weekInfo.textContent = `${startMonth} ${startOfWeek.getDate()} - ${endOfWeek.getDate()}`;
+                } else {
+                    weekInfo.textContent = `${startMonth} ${startOfWeek.getDate()} - ${endMonth} ${endOfWeek.getDate()}`;
+                }
+            }
+        }
+
+        // Анимация при свайпе
+        function animateCalendarSlide(direction) {
+            const container = document.querySelector('.week-calendar');
+            if (!container) return;
+
+            container.classList.add('swipe-animation');
+
+            if (direction === 'left') {
+                container.classList.add('swipe-left');
+            } else if (direction === 'right') {
+                container.classList.add('swipe-right');
+            }
+
+            setTimeout(() => {
+                container.classList.remove('swipe-animation', 'swipe-left', 'swipe-right');
+            }, 300);
+        }
+
+        // Выбор даты
+        function selectDate(date) {
+            window.selectedDate = date;
+
+            // Обновляем активный день в календаре
+            document.querySelectorAll('.calendar-day').forEach(day => {
+                const dayDate = new Date(day.dataset.date);
+                if (dayDate.toDateString() === date.toDateString()) {
+                    day.classList.add('active');
+                } else {
+                    day.classList.remove('active');
+                }
+            });
+
+            // Загружаем записи для выбранной даты
+            if (typeof loadAppointmentsForDate === 'function') {
+                loadAppointmentsForDate(date);
+            }
+        }
+
+        // Форматирование даты в YYYY-MM-DD
+        function formatDate(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        // Переключение на следующую неделю
+        function nextWeek() {
+            currentWeekOffset++;
+            updateWeekCalendar();
+            animateCalendarSlide('left');
+        }
+
+        // Переключение на предыдущую неделю
+        function prevWeek() {
+            currentWeekOffset--;
+            updateWeekCalendar();
+            animateCalendarSlide('right');
+        }
+
+        // Возврат к текущей неделе
+        function goToCurrentWeek() {
+            currentWeekOffset = 0;
+            updateWeekCalendar();
+            animateCalendarSlide(null);
+
+            // Выбираем текущую дату
+            if (typeof selectDate === 'function') {
+                selectDate(new Date());
+            }
+        }
+
+        // Экспорт функций для использования в других файлах
+        window.initWeekCalendarWithSwipe = initWeekCalendarWithSwipe;
+        window.nextWeek = nextWeek;
+        window.prevWeek = prevWeek;
+        window.goToCurrentWeek = goToCurrentWeek;
+        window.selectDate = selectDate;
     </script>
 {% endblock %}
