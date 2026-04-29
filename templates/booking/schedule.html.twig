@@ -513,15 +513,15 @@
         <div class="legend">
             <div class="legend-item">
                 <div class="legend-color low"></div>
-                <span>Свободно (0-30%)</span>
+                <span>Свободно (0-10%)</span>
             </div>
             <div class="legend-item">
                 <div class="legend-color medium"></div>
-                <span>Средне (30-70%)</span>
+                <span>Средне (10-20%)</span>
             </div>
             <div class="legend-item">
                 <div class="legend-color high"></div>
-                <span>Загружено (70-100%)</span>
+                <span>Загружено (20-100%)</span>
             </div>
         </div>
 
@@ -670,8 +670,8 @@
             const percentage = (bookedCount / totalSlots) * 100;
 
             let capacityClass = 'low';
-            if (percentage >= 70) capacityClass = 'high';
-            else if (percentage >= 30) capacityClass = 'medium';
+            if (percentage >= 20) capacityClass = 'high';
+            else if (percentage >= 10) capacityClass = 'medium';
 
             return {
                 percentage: percentage,
