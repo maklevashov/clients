@@ -57,11 +57,11 @@ api_update_client:
     methods: [POST]
 
 api_create_appointment:
-    path: /api/appointments/
+    path: /api/appointments
     controller: App\Controller\BookingController::createAppointment
     methods: [POST]
 
 api_appointments:
-    path: /api/appointments/
+    path: /api/appointments
     controller: App\Controller\BookingController::getAppointments
     methods: [GET]
