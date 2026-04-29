@@ -65,3 +65,8 @@ api_appointments:
     path: /api/appointments
     controller: App\Controller\BookingController::getAppointments
     methods: [GET]
+
+api_client_appointments:
+    path: /api/clients/{id}/appointments
+    controller: App\Controller\BookingController::getClientAppointments
+    methods: [GET]
