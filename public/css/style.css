@@ -397,3 +397,44 @@ body {
     background-color: #0056b3;
     transform: scale(1.1);
 }
+
+/* Анимации для индикаторов */
+@keyframes fillProgress {
+    from {
+        width: 0%;
+    }
+    to {
+        width: var(--target-width);
+    }
+}
+
+.capacity-fill {
+    animation: fillProgress 0.5s ease-out forwards;
+}
+
+/* Hover эффекты для слотов времени */
+.time-slot-item.available:hover {
+    background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%);
+    transform: translateX(4px);
+}
+
+.time-slot-item.booked:hover {
+    background: #FFF5F5;
+}
+
+/* Адаптивность */
+@media (max-width: 480px) {
+    .stats-grid {
+        gap: 8px;
+    }
+
+    .stat-value {
+        font-size: 18px;
+    }
+
+    .time-slot-header,
+    .time-slot-item {
+        grid-template-columns: 70px 1fr 70px;
+        font-size: 12px;
+    }
+}

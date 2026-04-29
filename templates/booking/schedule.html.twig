@@ -5,41 +5,19 @@
 {% block stylesheets %}
     {{ parent() }}
     <style>
-        /* Календарь */
+        /* Основные стили */
         .calendar-container {
-            background: #fff;
+            background: #f8f9fa;
             min-height: 100vh;
             padding-bottom: 70px;
         }
 
         .calendar-header {
-            padding: 20px;
-            background: #fff;
+            background: white;
+            padding: 15px;
             border-bottom: 1px solid #e0e0e0;
         }
 
-        .date-picker-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: baseline;
-            margin-bottom: 15px;
-        }
-
-        .selected-date {
-            font-size: 18px;
-            font-weight: 500;
-            color: #333;
-        }
-
-        .view-all-btn {
-            background: none;
-            border: none;
-            color: #007AFF;
-            font-size: 14px;
-            cursor: pointer;
-        }
-
-        /* Навигация по месяцам */
         .month-navigation {
             display: flex;
             justify-content: space-between;
@@ -58,57 +36,61 @@
 
         .current-month {
             font-size: 18px;
-            font-weight: 500;
+            font-weight: 600;
             color: #333;
         }
 
-        /* Дни недели */
         .weekdays {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
             text-align: center;
             padding: 10px 0;
             background: #f8f8f8;
-            border-radius: 8px;
-            margin-bottom: 10px;
+            border-radius: 10px;
         }
 
         .weekday {
-            font-size: 14px;
+            font-size: 13px;
             color: #666;
             font-weight: 500;
         }
 
-        /* Календарная сетка */
+        /* Календарь */
         .calendar-grid {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
             gap: 4px;
-            margin-bottom: 30px;
+            padding: 10px;
+            background: white;
+            margin: 10px;
+            border-radius: 16px;
         }
 
         .calendar-day-cell {
             aspect-ratio: 1;
-            padding: 8px;
+            padding: 8px 4px;
             text-align: center;
             position: relative;
             cursor: pointer;
-            border-radius: 8px;
+            border-radius: 12px;
             transition: all 0.2s;
-            background: #fff;
+            background: white;
         }
 
         .calendar-day-cell:hover {
-            background: #f5f5f5;
+            background: #f0f0f0;
+            transform: scale(1.02);
         }
 
         .calendar-day-cell.other-month {
             color: #ccc;
+            background: #fafafa;
         }
 
         .calendar-day-cell.today {
-            background: #007AFF;
+            background: linear-gradient(135deg, #007AFF 0%, #5856D6 100%);
             color: white;
+            box-shadow: 0 2px 8px rgba(0,122,255,0.3);
         }
 
         .calendar-day-cell.selected {
@@ -117,225 +99,222 @@
             box-shadow: 0 2px 8px rgba(0,122,255,0.3);
         }
 
-        .calendar-day-cell.has-appointments {
-            font-weight: 600;
-            position: relative;
+        .day-number {
+            font-size: 14px;
+            font-weight: 500;
         }
 
-        .calendar-day-cell.has-appointments::after {
-            content: '';
+        /* Индикация заполненности */
+        .capacity-indicator {
             position: absolute;
             bottom: 4px;
             left: 50%;
             transform: translateX(-50%);
-            width: 4px;
-            height: 4px;
-            background: #FF6B6B;
-            border-radius: 50%;
+            width: 30px;
+            height: 3px;
+            background: #e0e0e0;
+            border-radius: 2px;
+            overflow: hidden;
         }
 
-        .calendar-day-cell.today.has-appointments::after,
-        .calendar-day-cell.selected.has-appointments::after {
-            background: white;
-        }
-
-        .day-number {
-            font-size: 16px;
-            font-weight: 500;
-        }
-
-        /* Блок с записями на выбранную дату */
-        .appointments-panel {
-            background: #fff;
-            border-top: 1px solid #e0e0e0;
-            padding: 20px;
-            margin-top: 20px;
-        }
-
-        .appointments-panel-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .appointments-panel-header h3 {
-            font-size: 16px;
-            color: #333;
-        }
-
-        .add-appointment-btn {
-            background: #007AFF;
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            cursor: pointer;
-        }
-
-        .appointments-list {
-            max-height: 400px;
-            overflow-y: auto;
-        }
-
-        .appointment-item {
-            display: flex;
-            align-items: center;
-            padding: 12px;
-            background: #f9f9f9;
-            border-radius: 8px;
-            margin-bottom: 8px;
-            position: relative;
-        }
-
-        .appointment-time {
-            min-width: 70px;
-            font-weight: 500;
-            color: #FF6B6B;
-            font-size: 14px;
-        }
-
-        .appointment-info {
-            flex: 1;
-            margin-left: 12px;
-        }
-
-        .appointment-client {
-            font-size: 16px;
-            font-weight: 500;
-            color: #333;
-        }
-
-        .appointment-phone {
-            font-size: 12px;
-            color: #999;
-            margin-top: 2px;
-        }
-
-        .delete-appointment {
-            background: none;
-            border: none;
-            color: #999;
-            font-size: 18px;
-            cursor: pointer;
-            padding: 4px 8px;
-        }
-
-        .delete-appointment:hover {
-            color: #FF6B6B;
-        }
-
-        .no-appointments {
-            text-align: center;
-            padding: 40px;
-            color: #999;
-        }
-
-        /* Кнопка добавления клиента */
-        .fab-add-client {
-            position: fixed;
-            bottom: 80px;
-            right: 20px;
-            width: 56px;
-            height: 56px;
-            border-radius: 50%;
-            background: #007AFF;
-            color: white;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0,122,255,0.4);
-            z-index: 100;
-            transition: transform 0.2s;
-        }
-
-        .fab-add-client:hover {
-            transform: scale(1.1);
-        }
-
-        /* Модальное окно */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
+        .capacity-fill {
             height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 1000;
+            transition: width 0.3s ease;
         }
 
-        .modal-content {
+        .capacity-fill.low {
+            background: #34C759;
+        }
+
+        .capacity-fill.medium {
+            background: #FF9500;
+        }
+
+        .capacity-fill.high {
+            background: #FF3B30;
+        }
+
+        .capacity-fill.full {
+            background: #FF3B30;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.6;
+            }
+        }
+
+        /* Бейджи с количеством записей */
+        .appointments-count {
             position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
+            top: 4px;
+            right: 4px;
+            background: #FF3B30;
+            color: white;
+            font-size: 10px;
+            font-weight: bold;
+            padding: 2px 5px;
+            border-radius: 10px;
+            min-width: 18px;
+            text-align: center;
+        }
+
+        .calendar-day-cell.today .appointments-count {
+            background: rgba(255,255,255,0.3);
+        }
+
+        /* Слоты времени с индикацией */
+        .time-slots {
             background: white;
-            border-radius: 20px 20px 0 0;
-            padding: 20px;
-            animation: slideUp 0.3s ease;
+            margin: 10px;
+            border-radius: 16px;
+            overflow: hidden;
         }
 
-        @keyframes slideUp {
-            from {
-                transform: translateY(100%);
-            }
-            to {
-                transform: translateY(0);
-            }
+        .time-slot-header {
+            display: grid;
+            grid-template-columns: 80px 1fr 80px;
+            padding: 12px 15px;
+            background: #f8f8f8;
+            border-bottom: 1px solid #e0e0e0;
+            font-weight: 500;
+            color: #666;
+            font-size: 13px;
         }
 
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
+        .time-slot-item {
+            display: grid;
+            grid-template-columns: 80px 1fr 80px;
+            padding: 12px 15px;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background 0.2s;
+            cursor: pointer;
         }
 
-        .modal-header h2 {
-            font-size: 20px;
+        .time-slot-item:hover {
+            background: #f8f9ff;
+        }
+
+        .time-slot-item.booked {
+            background: #FFF5F5;
+            opacity: 0.7;
+        }
+
+        .time-slot-item.available {
+            background: #F0FFF4;
+        }
+
+        .time-label {
+            font-weight: 500;
             color: #333;
         }
 
-        .close-modal {
-            background: none;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            color: #999;
+        .time-status {
+            text-align: center;
         }
 
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: #666;
-            font-size: 14px;
-        }
-
-        .form-group select,
-        .form-group input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 16px;
-        }
-
-        .btn-submit {
-            width: 100%;
-            padding: 14px;
-            background: #007AFF;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
             font-weight: 500;
-            cursor: pointer;
+        }
+
+        .status-badge.available {
+            background: #E8F5E9;
+            color: #2E7D32;
+        }
+
+        .status-badge.booked {
+            background: #FFEBEE;
+            color: #C62828;
+        }
+
+        .status-badge.limited {
+            background: #FFF3E0;
+            color: #E65100;
+        }
+
+        .client-info {
+            font-size: 12px;
+            color: #666;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* Легенда */
+        .legend {
+            display: flex;
+            gap: 15px;
+            padding: 10px 15px;
+            background: white;
+            margin: 10px;
+            border-radius: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            color: #666;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 4px;
+            border-radius: 2px;
+        }
+
+        .legend-color.low { background: #34C759; }
+        .legend-color.medium { background: #FF9500; }
+        .legend-color.high { background: #FF3B30; }
+        .legend-color.full { background: #FF3B30; }
+
+        /* Статистика дня */
+        .day-stats {
+            background: white;
+            margin: 10px;
+            padding: 15px;
+            border-radius: 16px;
+        }
+
+        .stats-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .stats-grid {
+            display: flex;
+            gap: 15px;
+            justify-content: space-around;
+        }
+
+        .stat-card {
+            text-align: center;
+            flex: 1;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007AFF;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: #999;
+            margin-top: 4px;
         }
 
         /* Нижняя навигация */
@@ -362,7 +341,8 @@
             border: none;
             cursor: pointer;
             color: #999;
-            font-size: 12px;
+            font-size: 11px;
+            padding: 8px;
         }
 
         .nav-item.active {
@@ -373,24 +353,126 @@
             font-size: 20px;
             margin-bottom: 4px;
         }
+
+        /* Модальные окна */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: flex-end;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            width: 100%;
+            border-radius: 20px 20px 0 0;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(100%);
+            }
+            to {
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .modal-header h3 {
+            font-size: 18px;
+            color: #333;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .form-group select,
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .modal-footer {
+            padding: 20px;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-submit {
+            flex: 1;
+            padding: 14px;
+            background: #007AFF;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .btn-cancel {
+            flex: 1;
+            padding: 14px;
+            background: #f0f0f0;
+            color: #666;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+        }
     </style>
 {% endblock %}
 
 {% block body %}
     <div class="calendar-container">
         <div class="calendar-header">
-            <div class="date-picker-header">
-                <span class="selected-date" id="selectedDateDisplay">Выберите дату</span>
-                <button class="view-all-btn" id="viewAllBtn">Все</button>
-            </div>
-
             <div class="month-navigation">
                 <button class="month-nav-btn" id="prevMonth">←</button>
-                <span class="current-month" id="currentMonth">Март</span>
+                <span class="current-month" id="currentMonth"></span>
                 <button class="month-nav-btn" id="nextMonth">→</button>
             </div>
 
-            <!-- Дни недели -->
             <div class="weekdays">
                 <span class="weekday">ПН</span>
                 <span class="weekday">ВТ</span>
@@ -398,26 +480,63 @@
                 <span class="weekday">ЧТ</span>
                 <span class="weekday">ПТ</span>
                 <span class="weekday">Сб</span>
-                <span class="weekday">ВС</span>
+                <span class="weekday">Вс</span>
             </div>
         </div>
 
-        <!-- Календарь -->
         <div class="calendar-grid" id="calendarGrid"></div>
 
-        <!-- Записи на выбранную дату -->
-        <div class="appointments-panel" id="appointmentsPanel">
-            <div class="appointments-panel-header">
-                <h3 id="appointmentsDateTitle">Записи на 22 марта</h3>
-                <button class="add-appointment-btn" id="addAppointmentBtn">+ Добавить запись</button>
+        <!-- Легенда заполненности -->
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color low"></div>
+                <span>Свободно (0-30%)</span>
             </div>
-            <div class="appointments-list" id="appointmentsList">
-                <div class="no-appointments">Нет записей</div>
+            <div class="legend-item">
+                <div class="legend-color medium"></div>
+                <span>Средне (30-70%)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color high"></div>
+                <span>Загружено (70-100%)</span>
             </div>
         </div>
 
-        <!-- Кнопка добавления клиента -->
-        <button class="fab-add-client" id="fabAddClient">+</button>
+        <!-- Статистика выбранного дня -->
+        <div class="day-stats" id="dayStats" style="display: none;">
+            <div class="stats-title">📊 Статистика дня</div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalSlots">0</div>
+                    <div class="stat-label">Всего слотов</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="bookedSlots">0</div>
+                    <div class="stat-label">Записей</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="availableSlots">0</div>
+                    <div class="stat-label">Свободно</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="occupancyRate">0%</div>
+                    <div class="stat-label">Заполненность</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Слоты времени -->
+        <div class="time-slots" id="timeSlots" style="display: none;">
+            <div class="time-slot-header">
+                <span>Время</span>
+                <span>Клиент</span>
+                <span>Статус</span>
+            </div>
+            <div id="timeSlotsList"></div>
+        </div>
+
+        <!-- Кнопка добавления -->
+        <button class="fab-add" id="fabAddBtn" style="display: none;">+</button>
 
         <!-- Нижняя навигация -->
         <div class="bottom-nav">
@@ -437,9 +556,9 @@
                 <span class="icon">🔔</span>
                 <span>Уведомление</span>
             </button>
-            <button class="nav-item" data-page="more">
-                <span class="icon">⋯</span>
-                <span>Еще</span>
+            <button class="nav-item" data-page="profile">
+                <span class="icon">👤</span>
+                <span>Профиль</span>
             </button>
         </div>
     </div>
@@ -448,57 +567,41 @@
     <div id="appointmentModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Новая запись</h2>
-                <button class="close-modal">&times;</button>
+                <h3>Новая запись</h3>
+                <button class="close-modal" onclick="closeModal('appointmentModal')">&times;</button>
             </div>
-            <form id="appointmentForm">
-                <div class="form-group">
-                    <label for="clientSelect">Клиент:</label>
-                    <select id="clientSelect" required>
-                        <option value="">Выберите клиента</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="appointmentDate">Дата:</label>
-                    <input type="date" id="appointmentDate" required>
-                </div>
-                <div class="form-group">
-                    <label for="appointmentTime">Время:</label>
-                    <select id="appointmentTime" required>
-                        <option value="08:00">08:00 - 11:00</option>
-                        <option value="09:00">09:00 - 12:00</option>
-                        <option value="10:00">10:00 - 13:00</option>
-                        <option value="11:00">11:00 - 14:00</option>
-                        <option value="12:00">12:00 - 15:00</option>
-                        <option value="13:00">13:00 - 16:00</option>
-                        <option value="14:00">14:00 - 17:00</option>
-                        <option value="15:00">15:00 - 18:00</option>
-                        <option value="16:00">16:00 - 19:00</option>
-                    </select>
-                </div>
-                <button type="submit" class="btn-submit">Создать запись</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- Модальное окно для добавления клиента -->
-    <div id="clientModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Новый клиент</h2>
-                <button class="close-modal close-client">&times;</button>
+            <div class="modal-body">
+                <form id="appointmentForm">
+                    <div class="form-group">
+                        <label for="clientSelect">Клиент:</label>
+                        <select id="clientSelect" required>
+                            <option value="">Выберите клиента</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="appointmentDate">Дата:</label>
+                        <input type="date" id="appointmentDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="appointmentTime">Время:</label>
+                        <select id="appointmentTime" required>
+                            <option value="09:00">09:00 - 12:00</option>
+                            <option value="10:00">10:00 - 13:00</option>
+                            <option value="11:00">11:00 - 14:00</option>
+                            <option value="12:00">12:00 - 15:00</option>
+                            <option value="13:00">13:00 - 16:00</option>
+                            <option value="14:00">14:00 - 17:00</option>
+                            <option value="15:00">15:00 - 18:00</option>
+                            <option value="16:00">16:00 - 19:00</option>
+                            <option value="17:00">17:00 - 20:00</option>
+                        </select>
+                    </div>
+                </form>
             </div>
-            <form id="newClientForm">
-                <div class="form-group">
-                    <label for="clientName">Имя:</label>
-                    <input type="text" id="clientName" required>
-                </div>
-                <div class="form-group">
-                    <label for="clientPhone">Телефон:</label>
-                    <input type="tel" id="clientPhone" required placeholder="+7XXXXXXXXXX">
-                </div>
-                <button type="submit" class="btn-submit">Добавить клиента</button>
-            </form>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="closeModal('appointmentModal')">Отмена</button>
+                <button class="btn-submit" onclick="createAppointment()">Создать</button>
+            </div>
         </div>
     </div>
 
@@ -509,44 +612,21 @@
         let currentMonth = currentDate.getMonth();
         let currentYear = currentDate.getFullYear();
         let appointments = {};
+        let timeSlots = [
+            '09:00', '10:00', '11:00', '12:00', '13:00',
+            '14:00', '15:00', '16:00', '17:00'
+        ];
 
-        // Инициализация
         $(document).ready(function() {
             loadClients();
             loadAppointments();
             renderCalendar();
-
-            // Обновление отображения выбранной даты
             updateSelectedDateDisplay();
 
-            // Загрузка записей на выбранную дату
-            loadAppointmentsForDate(selectedDate);
-
-            // Обработчики событий
             $('#prevMonth').click(prevMonth);
             $('#nextMonth').click(nextMonth);
-            $('#addAppointmentBtn').click(showAppointmentModal);
-            $('#fabAddClient').click(showClientModal);
-            $('#viewAllBtn').click(viewAllAppointments);
+            $('#fabAddBtn').click(showAppointmentModal);
 
-            // Закрытие модальных окон
-            $('.close-modal, .close-client').click(function() {
-                $('.modal').hide();
-            });
-
-            $(window).click(function(event) {
-                if ($(event.target).hasClass('modal')) {
-                    $('.modal').hide();
-                }
-            });
-
-            // Отправка формы записи
-            $('#appointmentForm').submit(createAppointment);
-
-            // Отправка формы нового клиента
-            $('#newClientForm').submit(createClient);
-
-            // Навигация
             $('.nav-item').click(function() {
                 const page = $(this).data('page');
                 if (page === 'journal') {
@@ -559,7 +639,154 @@
             });
         });
 
-        // Загрузка списка клиентов
+        // Расчет заполненности для дня
+        function calculateDayCapacity(dateStr) {
+            const dayAppointments = appointments[dateStr] || [];
+            const totalSlots = timeSlots.length;
+            const bookedCount = dayAppointments.length;
+            const percentage = (bookedCount / totalSlots) * 100;
+
+            let capacityClass = 'low';
+            if (percentage >= 70) capacityClass = 'high';
+            else if (percentage >= 30) capacityClass = 'medium';
+
+            return {
+                percentage: percentage,
+                class: capacityClass,
+                bookedCount: bookedCount,
+                totalSlots: totalSlots,
+                availableSlots: totalSlots - bookedCount
+            };
+        }
+
+        // Рендер календаря с индикацией заполненности
+        function renderCalendar() {
+            const firstDay = new Date(currentYear, currentMonth, 1);
+            const lastDay = new Date(currentYear, currentMonth + 1, 0);
+            const startDayOfWeek = firstDay.getDay() || 7;
+            const daysInMonth = lastDay.getDate();
+
+            let calendarHtml = '';
+            let dayCounter = 1;
+
+            const prevMonthLastDay = new Date(currentYear, currentMonth, 0).getDate();
+            for (let i = startDayOfWeek - 1; i > 0; i--) {
+                const day = prevMonthLastDay - i + 1;
+                calendarHtml += `<div class="calendar-day-cell other-month">
+                                <div class="day-number">${day}</div>
+                            </div>`;
+                dayCounter++;
+            }
+
+            const today = new Date();
+            const selectedDateStr = `${selectedDate.getFullYear()}-${selectedDate.getMonth()}-${selectedDate.getDate()}`;
+
+            for (let i = 1; i <= daysInMonth; i++) {
+                const dateStr = `${currentYear}-${currentMonth + 1}-${i}`;
+                const capacity = calculateDayCapacity(dateStr);
+                const isToday = currentYear === today.getFullYear() && currentMonth === today.getMonth() && i === today.getDate();
+                const isSelected = dateStr === selectedDateStr;
+
+                let additionalClass = '';
+                if (isToday) additionalClass = 'today';
+                if (isSelected) additionalClass = 'selected';
+
+                calendarHtml += `
+                <div class="calendar-day-cell ${additionalClass}"
+                     data-date="${dateStr}"
+                     data-year="${currentYear}"
+                     data-month="${currentMonth}"
+                     data-day="${i}">
+                    <div class="day-number">${i}</div>
+                    ${capacity.bookedCount > 0 ? `<div class="appointments-count">${capacity.bookedCount}</div>` : ''}
+                    <div class="capacity-indicator">
+                        <div class="capacity-fill ${capacity.class}" style="width: ${Math.min(capacity.percentage, 100)}%"></div>
+                    </div>
+                </div>
+            `;
+            }
+
+            const remainingCells = 42 - (dayCounter + daysInMonth - 1);
+            for (let i = 1; i <= remainingCells; i++) {
+                calendarHtml += `<div class="calendar-day-cell other-month">
+                                <div class="day-number">${i}</div>
+                            </div>`;
+            }
+
+            $('#calendarGrid').html(calendarHtml);
+
+            const monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+            $('#currentMonth').text(monthNames[currentMonth] + ' ' + currentYear);
+
+            $('.calendar-day-cell').click(function() {
+                if ($(this).hasClass('other-month')) return;
+
+                const dateStr = $(this).data('date');
+                selectedDate = new Date(dateStr);
+                updateSelectedDateDisplay();
+                loadTimeSlotsForDate(selectedDate);
+
+                $('.calendar-day-cell').removeClass('selected');
+                $(this).addClass('selected');
+            });
+        }
+
+        // Загрузка слотов времени для выбранной даты
+        function loadTimeSlotsForDate(date) {
+            const dateStr = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+            const dayAppointments = appointments[dateStr] || [];
+            const capacity = calculateDayCapacity(dateStr);
+
+            // Показываем статистику
+            $('#dayStats').show();
+            $('#totalSlots').text(capacity.totalSlots);
+            $('#bookedSlots').text(capacity.bookedCount);
+            $('#availableSlots').text(capacity.availableSlots);
+            $('#occupancyRate').text(Math.round(capacity.percentage) + '%');
+
+            // Показываем слоты времени
+            $('#timeSlots').show();
+            $('#fabAddBtn').show();
+
+            let slotsHtml = '';
+            timeSlots.forEach(time => {
+                const appointment = dayAppointments.find(apt => apt.start_time === time);
+                const isBooked = !!appointment;
+                const statusClass = isBooked ? 'booked' : 'available';
+                const statusBadge = isBooked ? 'booked' : 'available';
+                const statusText = isBooked ? 'Занято' : 'Свободно';
+
+                slotsHtml += `
+                <div class="time-slot-item ${statusClass}" data-time="${time}" onclick="${!isBooked ? `showAppointmentModalWithTime('${time}')` : ''}">
+                    <div class="time-label">${time}</div>
+                    <div class="client-info">${isBooked ? appointment.client_name : '—'}</div>
+                    <div class="time-status">
+                        <span class="status-badge ${statusBadge}">${statusText}</span>
+                    </div>
+                </div>
+            `;
+            });
+
+            $('#timeSlotsList').html(slotsHtml);
+        }
+
+        function showAppointmentModalWithTime(time) {
+            const dateStr = selectedDate.toISOString().split('T')[0];
+            $('#appointmentDate').val(dateStr);
+            $('#appointmentTime').val(time);
+            $('#appointmentModal').addClass('show');
+        }
+
+        function showAppointmentModal() {
+            const dateStr = selectedDate.toISOString().split('T')[0];
+            $('#appointmentDate').val(dateStr);
+            $('#appointmentModal').addClass('show');
+        }
+
+        function closeModal(modalId) {
+            $(`#${modalId}`).removeClass('show');
+        }
+
         function loadClients() {
             $.ajax({
                 url: '/api/clients',
@@ -575,7 +802,6 @@
             });
         }
 
-        // Загрузка всех записей
         function loadAppointments() {
             $.ajax({
                 url: '/api/appointments/all',
@@ -590,174 +816,14 @@
                         appointments[date].push(apt);
                     });
                     renderCalendar();
-                    loadAppointmentsForDate(selectedDate);
+                    if (selectedDate) {
+                        loadTimeSlotsForDate(selectedDate);
+                    }
                 }
             });
         }
 
-        // Рендер календаря
-        function renderCalendar() {
-            const firstDay = new Date(currentYear, currentMonth, 1);
-            const lastDay = new Date(currentYear, currentMonth + 1, 0);
-            const startDayOfWeek = firstDay.getDay() || 7;
-            const daysInMonth = lastDay.getDate();
-
-            let calendarHtml = '';
-            let dayCounter = 1;
-
-            // Дни предыдущего месяца
-            const prevMonthLastDay = new Date(currentYear, currentMonth, 0).getDate();
-            for (let i = startDayOfWeek - 1; i > 0; i--) {
-                const day = prevMonthLastDay - i + 1;
-                calendarHtml += `<div class="calendar-day-cell other-month" data-date="${currentYear}-${currentMonth}-${day}">
-                                <div class="day-number">${day}</div>
-                            </div>`;
-                dayCounter++;
-            }
-
-            // Дни текущего месяца
-            const today = new Date();
-            const todayStr = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
-            const selectedDateStr = `${selectedDate.getFullYear()}-${selectedDate.getMonth()}-${selectedDate.getDate()}`;
-
-            for (let i = 1; i <= daysInMonth; i++) {
-                const dateStr = `${currentYear}-${currentMonth}-${i}`;
-                const hasAppointments = appointments[dateStr] && appointments[dateStr].length > 0;
-                let additionalClass = '';
-
-                if (currentYear === today.getFullYear() && currentMonth === today.getMonth() && i === today.getDate()) {
-                    additionalClass = 'today';
-                }
-
-                if (dateStr === selectedDateStr) {
-                    additionalClass = 'selected';
-                }
-
-                calendarHtml += `<div class="calendar-day-cell ${additionalClass} ${hasAppointments ? 'has-appointments' : ''}"
-                                data-year="${currentYear}" data-month="${currentMonth}" data-day="${i}">
-                                <div class="day-number">${i}</div>
-                            </div>`;
-            }
-
-            // Дни следующего месяца
-            const remainingCells = 42 - (dayCounter + daysInMonth - 1);
-            for (let i = 1; i <= remainingCells; i++) {
-                calendarHtml += `<div class="calendar-day-cell other-month" data-date="${currentYear}-${currentMonth + 1}-${i}">
-                                <div class="day-number">${i}</div>
-                            </div>`;
-            }
-
-            $('#calendarGrid').html(calendarHtml);
-
-            // Обновление названия месяца
-            const monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
-            $('#currentMonth').text(monthNames[currentMonth]);
-
-            // Обработчик клика по дню
-            $('.calendar-day-cell').click(function() {
-                if ($(this).hasClass('other-month')) return;
-
-                const year = $(this).data('year');
-                const month = $(this).data('month');
-                const day = $(this).data('day');
-
-                selectedDate = new Date(year, month, day);
-                updateSelectedDateDisplay();
-                loadAppointmentsForDate(selectedDate);
-
-                // Обновление выделения
-                $('.calendar-day-cell').removeClass('selected');
-                $(this).addClass('selected');
-            });
-        }
-
-        // Загрузка записей на выбранную дату
-        function loadAppointmentsForDate(date) {
-            const dateStr = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
-            const formattedDate = `${date.getDate()} ${getMonthName(date.getMonth())}`;
-            $('#appointmentsDateTitle').text(`Записи на ${formattedDate}`);
-
-            const dayAppointments = appointments[dateStr] || [];
-
-            if (dayAppointments.length === 0) {
-                $('#appointmentsList').html('<div class="no-appointments">Нет записей</div>');
-                return;
-            }
-
-            let html = '';
-            dayAppointments.forEach(apt => {
-                html += `
-                <div class="appointment-item" data-id="${apt.id}">
-                    <div class="appointment-time">${apt.start_time}</div>
-                    <div class="appointment-info">
-                        <div class="appointment-client">${apt.client_name}</div>
-                        <div class="appointment-phone">${apt.client_phone}</div>
-                    </div>
-                    <button class="delete-appointment" onclick="deleteAppointment(${apt.id})">🗑</button>
-                </div>
-            `;
-            });
-
-            $('#appointmentsList').html(html);
-        }
-
-        // Обновление отображения выбранной даты
-        function updateSelectedDateDisplay() {
-            const day = selectedDate.getDate();
-            const month = getMonthName(selectedDate.getMonth());
-            $('#selectedDateDisplay').text(`${day} ${month}`);
-        }
-
-        // Получение названия месяца
-        function getMonthName(month) {
-            const months = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
-            return months[month];
-        }
-
-        // Предыдущий месяц
-        function prevMonth() {
-            currentMonth--;
-            if (currentMonth < 0) {
-                currentMonth = 11;
-                currentYear--;
-            }
-            renderCalendar();
-        }
-
-        // Следующий месяц
-        function nextMonth() {
-            currentMonth++;
-            if (currentMonth > 11) {
-                currentMonth = 0;
-                currentYear++;
-            }
-            renderCalendar();
-        }
-
-        // Показать модальное окно записи
-        function showAppointmentModal() {
-            const year = selectedDate.getFullYear();
-            const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
-            const day = String(selectedDate.getDate()).padStart(2, '0');
-            $('#appointmentDate').val(`${year}-${month}-${day}`);
-            $('#appointmentModal').show();
-        }
-
-        // Показать модальное окно клиента
-        function showClientModal() {
-            $('#clientModal').show();
-        }
-
-        // Просмотр всех записей
-        function viewAllAppointments() {
-            alert('Все записи будут отображены в журнале');
-            window.location.href = '/';
-        }
-
-        // Создание записи
-        function createAppointment(e) {
-            e.preventDefault();
-
+        function createAppointment() {
             const clientId = $('#clientSelect').val();
             const date = $('#appointmentDate').val();
             const time = $('#appointmentTime').val();
@@ -777,53 +843,40 @@
                     start_time: time
                 }),
                 success: function() {
-                    $('#appointmentModal').hide();
+                    closeModal('appointmentModal');
                     loadAppointments();
                     $('#appointmentForm')[0].reset();
                 },
                 error: function(xhr) {
-                    alert('Ошибка: ' + xhr.responseJSON.error);
+                    alert('Ошибка: ' + (xhr.responseJSON?.error || 'Не удалось создать запись'));
                 }
             });
         }
 
-        // Создание клиента
-        function createClient(e) {
-            e.preventDefault();
-
-            const name = $('#clientName').val();
-            const phone = $('#clientPhone').val();
-
-            $.ajax({
-                url: '/api/clients',
-                method: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({
-                    name: name,
-                    phone: phone
-                }),
-                success: function() {
-                    $('#clientModal').hide();
-                    loadClients();
-                    $('#newClientForm')[0].reset();
-                },
-                error: function(xhr) {
-                    alert('Ошибка: ' + xhr.responseJSON.error);
-                }
-            });
-        }
-
-        // Удаление записи
-        window.deleteAppointment = function(id) {
-            if (confirm('Удалить эту запись?')) {
-                $.ajax({
-                    url: `/api/appointments/${id}`,
-                    method: 'DELETE',
-                    success: function() {
-                        loadAppointments();
-                    }
-                });
+        function prevMonth() {
+            currentMonth--;
+            if (currentMonth < 0) {
+                currentMonth = 11;
+                currentYear--;
             }
-        };
+            renderCalendar();
+        }
+
+        function nextMonth() {
+            currentMonth++;
+            if (currentMonth > 11) {
+                currentMonth = 0;
+                currentYear++;
+            }
+            renderCalendar();
+        }
+
+        function updateSelectedDateDisplay() {
+            const formattedDate = selectedDate.toLocaleDateString('ru-RU', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
+            });
+        }
     </script>
 {% endblock %}
