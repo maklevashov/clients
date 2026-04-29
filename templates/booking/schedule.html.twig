@@ -608,6 +608,8 @@
                     <div class="form-group">
                         <label for="appointmentTime">Время:</label>
                         <select id="appointmentTime" required>
+                            <option value="09:00">07:00 - 12:00</option>
+                            <option value="09:00">08:00 - 11:00</option>
                             <option value="09:00">09:00 - 12:00</option>
                             <option value="10:00">10:00 - 13:00</option>
                             <option value="11:00">11:00 - 14:00</option>
@@ -617,6 +619,9 @@
                             <option value="15:00">15:00 - 18:00</option>
                             <option value="16:00">16:00 - 19:00</option>
                             <option value="17:00">17:00 - 20:00</option>
+                            <option value="17:00">18:00 - 21:00</option>
+                            <option value="17:00">19:00 - 22:00</option>
+                            <option value="17:00">20:00 - 23:00</option>
                         </select>
                     </div>
                 </form>
@@ -636,8 +641,9 @@
         let currentYear = currentDate.getFullYear();
         let appointments = {};
         let timeSlots = [
+            '07:00', '08:00',
             '09:00', '10:00', '11:00', '12:00', '13:00',
-            '14:00', '15:00', '16:00', '17:00'
+            '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00'
         ];
 
         $(document).ready(function() {
