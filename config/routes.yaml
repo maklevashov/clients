@@ -5,9 +5,9 @@ app_login:
     path: /login
     controller: App\Controller\AuthController::login
 
-app_register:
-    path: /register
-    controller: App\Controller\AuthController::register
+#app_register:
+#    path: /register
+#    controller: App\Controller\AuthController::register
 
 app_logout:
     path: /logout
@@ -70,3 +70,191 @@ api_client_appointments:
     path: /api/clients/{id}/appointments
     controller: App\Controller\BookingController::getClientAppointments
     methods: [GET]
+
+api_delete_appointment:
+    path: /api/appointments/{id}
+    controller: App\Controller\BookingController::deleteAppointment
+    methods: ['DELETE']
+    requirements:
+        id: '\d+'
+
+api_clients:
+    path: /api/clients
+    controller: App\Controller\BookingController::getClients
+    methods: ['GET']
+
+api_get_client:
+    path: /api/clients/{id}
+    controller: App\Controller\BookingController::getClient
+    methods: ['GET']
+    requirements:
+        id: '\d+'
+
+api_add_category:
+    path: /api/clients/{id}/categories
+    controller: App\Controller\BookingController::addCategory
+    methods: ['POST']
+    requirements:
+        id: '\d+'
+
+api_remove_category:
+    path: /api/clients/{id}/categories
+    controller: App\Controller\BookingController::removeCategory
+    methods: ['DELETE']
+    requirements:
+        id: '\d+'
+
+api_all_appointments:
+    path: /api/appointments/all
+    controller: App\Controller\BookingController::getAllAppointments
+    methods: ['GET']
+
+api_clients_list:
+    path: /api/clients
+    controller: App\Controller\BookingController::getClientsList
+    methods: ['GET']
+
+api_notifications:
+    path: /api/notifications
+    controller: App\Controller\BookingController::getNotifications
+    methods: ['GET']
+
+api_notification_read:
+    path: /api/notifications/{id}/read
+    controller: App\Controller\BookingController::markNotificationRead
+    methods: ['POST']
+    requirements:
+        id: '\d+'
+
+api_notifications_read_all:
+    path: /api/notifications/mark-all-read
+    controller: App\Controller\BookingController::markAllNotificationsRead
+    methods: ['POST']
+
+
+    ##todo переделать на jwt (возможно не надо)
+
+    # JWT авторизация
+#    api_login_check:
+#        path: /api/login_check
+#        methods: [ 'POST' ]
+
+    # JWT защищенные API роуты (все API методы с JWT)
+#    api_jwt_appointments_get:
+#        path: /api/jwt/appointments
+#        controller: App\Controller\BookingController::getAppointments
+#        methods: [ 'GET' ]
+#        options:
+#            jwt_auth: true
+#
+#    api_jwt_appointments_create:
+#        path: /api/jwt/appointments
+#        controller: App\Controller\BookingController::createAppointment
+#        methods: [ 'POST' ]
+#        options:
+#            jwt_auth: true
+#
+#    api_jwt_appointments_delete:
+#        path: /api/jwt/appointments/{id}
+#        controller: App\Controller\BookingController::deleteAppointment
+#        methods: [ 'DELETE' ]
+#        requirements:
+#            id: '\d+'
+#        options:
+#            jwt_auth: true
+#
+#    api_jwt_clients_get:
+#        path: /api/jwt/clients
+#        controller: App\Controller\BookingController::getClients
+#        methods: [ 'GET' ]
+#        options:
+#            jwt_auth: true
+#
+#    api_jwt_clients_create:
+#        path: /api/jwt/clients
+#        controller: App\Controller\BookingController::createClient
+#        methods: [ 'POST' ]
+#        options:
+#            jwt_auth: true
+#
+#    api_jwt_client_get:
+#        path: /api/jwt/clients/{id}
+#        controller: App\Controller\BookingController::getClient
+#        methods: [ 'GET' ]
+#        requirements:
+#            id: '\d+'
+#        options:
+#            jwt_auth: true
+#
+#    api_jwt_client_update:
+#        path: /api/jwt/clients/{id}
+#        controller: App\Controller\BookingController::updateClient
+#        methods: [ 'PUT' ]
+#        requirements:
+#            id: '\d+'
+#        options:
+#            jwt_auth: true
+#
+#    api_jwt_client_categories_add:
+#        path: /api/jwt/clients/{id}/categories
+#        controller: App\Controller\BookingController::addCategory
+#        methods: [ 'POST' ]
+#        requirements:
+#            id: '\d+'
+#        options:
+#            jwt_auth: true
+#
+#    api_jwt_client_categories_remove:
+#        path: /api/jwt/clients/{id}/categories
+#        controller: App\Controller\BookingController::removeCategory
+#        methods: [ 'DELETE' ]
+#        requirements:
+#            id: '\d+'
+#        options:
+#            jwt_auth: true
+#
+#    api_jwt_client_appointments:
+#        path: /api/jwt/clients/{id}/appointments
+#        controller: App\Controller\BookingController::getClientAppointments
+#        methods: [ 'GET' ]
+#        requirements:
+#            id: '\d+'
+#        options:
+#            jwt_auth: true
+#
+#    api_jwt_appointments_all:
+#        path: /api/jwt/appointments/all
+#        controller: App\Controller\BookingController::getAllAppointments
+#        methods: [ 'GET' ]
+#        options:
+#            jwt_auth: true
+#
+#    api_jwt_clients_list:
+#        path: /api/jwt/clients/list
+#        controller: App\Controller\BookingController::getClientsList
+#        methods: [ 'GET' ]
+#        options:
+#            jwt_auth: true
+#
+#    api_jwt_notifications:
+#        path: /api/jwt/notifications
+#        controller: App\Controller\BookingController::getNotifications
+#        methods: [ 'GET' ]
+#        options:
+#            jwt_auth: true
+#
+#    api_jwt_notification_read:
+#        path: /api/jwt/notifications/{id}/read
+#        controller: App\Controller\BookingController::markNotificationRead
+#        methods: [ 'POST' ]
+#        requirements:
+#            id: '\d+'
+#        options:
+#            jwt_auth: true
+#
+#    api_jwt_notifications_read_all:
+#        path: /api/jwt/notifications/mark-all-read
+#        controller: App\Controller\BookingController::markAllNotificationsRead
+#        methods: [ 'POST' ]
+#        options:
+#            jwt_auth: true
