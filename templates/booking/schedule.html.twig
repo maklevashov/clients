@@ -461,6 +461,29 @@
             font-size: 16px;
             cursor: pointer;
         }
+
+        /* Floating action button */
+        .fab-add {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #007AFF 0%, #0056b3 100%);
+            color: white;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,122,255,0.4);
+            z-index: 100;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .fab-add:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 16px rgba(0,122,255,0.5);
+        }
     </style>
 {% endblock %}
 
