@@ -773,7 +773,7 @@
 
             $.ajax({
                 url: `/api/clients/${clientId}`,
-                method: 'PUT',
+                method: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify(updateData),
                 success: function() {

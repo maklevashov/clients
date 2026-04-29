@@ -282,7 +282,7 @@ class BookingController extends AbstractController
         ]);
     }
 
-    #[Route('/api/clients/{id}', name: 'api_update_client', methods: ['PUT'])]
+    #[Route('/api/clients/{id}', name: 'api_update_client', methods: ['POST'])]
     public function updateClient(int $id, Request $request, EntityManagerInterface $entityManager): JsonResponse
     {
         $client = $entityManager->getRepository(Client::class)->find($id);
