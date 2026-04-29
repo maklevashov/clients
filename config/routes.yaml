@@ -57,3 +57,7 @@ api_update_client:
 api_create_appointment:
     path: /api/appointments/{create}
     controller: App\Controller\BookingController::createAppointment
+
+api_appointments:
+    path: /api/appointments/{date}
+    controller: App\Controller\BookingController::getAppointments
