@@ -206,8 +206,8 @@
                 const searchTerm = $(this).val().toLowerCase();
 
                 $('.client-item').each(function() {
-                    const name = $(this).data('name');
-                    const phone = $(this).data('phone');
+                    const name = String($(this).data('name') || '').toLowerCase();
+                    const phone = String($(this).data('phone') || '').toLowerCase();
 
                     if (name.includes(searchTerm) || phone.includes(searchTerm)) {
                         $(this).show();
