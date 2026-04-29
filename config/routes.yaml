@@ -49,15 +49,19 @@ app_client_profile:
 api_create_client:
     path: /api/clients
     controller: App\Controller\BookingController::createClient
+    methods: [POST]
 
 api_update_client:
     path: /api/clients/{id}
     controller: App\Controller\BookingController::updateClient
+    methods: [POST]
 
 api_create_appointment:
-    path: /api/appointments/{create}
+    path: /api/appointments/
     controller: App\Controller\BookingController::createAppointment
+    methods: [POST]
 
 api_appointments:
-    path: /api/appointments/{date}
+    path: /api/appointments/
     controller: App\Controller\BookingController::getAppointments
+    methods: [GET]
