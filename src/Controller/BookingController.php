@@ -146,7 +146,7 @@ class BookingController extends AbstractController
         return $this->json($formattedAppointments);
     }
 
-    #[Route('/api/appointments', name: 'api_create_appointment', methods: ['POST'])]
+    #[Route('/api/appointments/{create}', name: 'api_create_appointment', methods: ['POST'])]
     public function createAppointment(Request $request, EntityManagerInterface $entityManager): JsonResponse
     {
         if (!$this->getUser()) {
