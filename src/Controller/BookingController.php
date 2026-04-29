@@ -108,7 +108,7 @@ class BookingController extends AbstractController
     }
 
     // API методы
-    #[Route('/api/appointments', name: 'api_appointments', methods: ['GET'])]
+    #[Route('/api/appointments/{date}', name: 'api_appointments', methods: ['GET'])]
     public function getAppointments(Request $request, EntityManagerInterface $entityManager): JsonResponse
     {
         if (!$this->getUser()) {
