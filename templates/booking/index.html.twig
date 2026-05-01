@@ -895,7 +895,7 @@
                 weekDays.push(date);
 
                 html += `
-            <div class="calendar-day ${isSelected ? 'active' : ''} ${isToday ? 'today' : ''}"
+            <div class="calendar-day${isSelected ? ' active' : ''} ${isToday ? ' today' : ''}"
                  data-date="${dateStr}"
                  data-index="${i}">
                 <span class="day-name">${days[i]}</span>
@@ -916,6 +916,7 @@
                         const dateStr = day.dataset.date;
                         if (dateStr) {
                             selectDate(new Date(dateStr));
+                            loadAppointments(dateStr);
                         }
                     });
                 });
