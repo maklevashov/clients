@@ -647,7 +647,12 @@
 
         // Загрузка записей
         function loadAppointments(date) {
-            const dateStr = date.toISOString().split('T')[0];
+            var dateStr = '';
+            if (date.includes('T')) {
+                dateStr = date.toISOString().split('T')[0];
+            } else {
+                dateStr = date;
+            }
 
             $.ajax({
                 url: `/api/appointments?date=${dateStr}`,
