@@ -627,7 +627,7 @@
                 const isSelected = date.toDateString() === selectedDate.toDateString();
 
                 html += `
-                <div class="calendar-day ${isSelected ? 'active' : ''}" data-date="${date.toISOString().split('T')[0]}">
+                <div class="calendar-day${isSelected ? ' active' : ''}" data-date="${date.toISOString().split('T')[0]}">
                     <span class="day-name">${days[i]}</span>
                     <span class="day-number">${date.getDate()}</span>
                 </div>
