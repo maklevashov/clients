@@ -648,7 +648,7 @@
         // Загрузка записей
         function loadAppointments(date) {
             var dateStr = '';
-            if (date.includes('T')) {
+            if (typeof value !== 'string') {
                 dateStr = date.toISOString().split('T')[0];
             } else {
                 dateStr = date;
