@@ -5,9 +5,9 @@ app_login:
     path: /login
     controller: App\Controller\AuthController::login
 
-#app_register:
-#    path: /register
-#    controller: App\Controller\AuthController::register
+app_register:
+    path: /register
+    controller: App\Controller\AuthController::register
 
 app_logout:
     path: /logout
