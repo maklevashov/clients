@@ -515,4 +515,82 @@ class BookingController extends AbstractController
         // В реальном приложении здесь нужно сохранять статус прочтения в БД
         return $this->json(['success' => true]);
     }
+
+    #[Route('/api/clients/search', name: 'api_clients_search', methods: ['GET'])]
+    public function searchClients(Request $request, EntityManagerInterface $entityManager): JsonResponse
+    {
+        $user = $this->getUser();
+
+        if (!$user) {
+            return $this->json(['error' => 'Unauthorized'], 401);
+        }
+
+        $query = $request->query->get('q', '');
+
+        if (strlen($query) < 2) {
+            return $this->json([]);
+        }
+
+        $qb = $entityManager->getRepository(Client::class)
+            ->createQueryBuilder('c')
+            ->where('c.user = :user')
+            ->setParameter('user', $user);
+
+        // Поиск по имени или телефону
+        $qb->andWhere('c.name LIKE :query OR c.phone LIKE :query')
+            ->setParameter('query', '%' . $query . '%')
+            ->orderBy('c.name', 'ASC')
+            ->setMaxResults(20);
+
+        $clients = $qb->getQuery()->getResult();
+
+        $data = [];
+        foreach ($clients as $client) {
+            $metadata = $client->getMetadata() ?? [];
+            $data[] = [
+                'id' => $client->getId(),
+                'name' => $client->getName(),
+                'phone' => $client->getPhone(),
+                'email' => $metadata['email'] ?? 'Неизвестно'
+            ];
+        }
+
+        return $this->json($data);
+    }
+
+    #[Route('/api/clients/recent', name: 'api_clients_recent', methods: ['GET'])]
+    public function getRecentClients(EntityManagerInterface $entityManager): JsonResponse
+    {
+        $user = $this->getUser();
+
+        if (!$user) {
+            return $this->json(['error' => 'Unauthorized'], 401);
+        }
+
+        // Получаем последних 10 клиентов, у которых были записи
+        $clients = $entityManager->createQueryBuilder()
+            ->select('c.id', 'c.name', 'c.phone', 'c.metadata')
+            ->from('App\Entity\Client', 'c')
+            ->leftJoin('App\Entity\Appointment', 'a', 'WITH', 'a.client = c.id')
+            ->where('c.user = :user')
+            ->setParameter('user', $user)
+            ->groupBy('c.id')
+            ->orderBy('MAX(a.createdAt)', 'DESC')
+            ->setMaxResults(10)
+            ->getQuery()
+            ->getResult();
+
+        $data = [];
+        foreach ($clients as $client) {
+            $metadata = $client['metadata'] ?? [];
+            $data[] = [
+                'id' => $client['id'],
+                'name' => $client['name'],
+                'phone' => $client['phone'],
+                'email' => $metadata['email'] ?? 'Неизвестно'
+            ];
+        }
+
+        return $this->json($data);
+    }
 }
