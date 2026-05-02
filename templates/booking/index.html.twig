@@ -1265,8 +1265,8 @@
                 data: JSON.stringify({ name: name, phone: phone }),
                 success: function(response) {
                     if (response.success) {
-                        // Закрываем все модальные окна
-                        $('.modal').removeClass('show');
+                        // Закрываем окно создания
+                        closeModal('createClientModal');
 
                         // Очищаем форму
                         $('#newClientName').val('');
