@@ -5,24 +5,44 @@
 {% block stylesheets %}
     {{ parent() }}
     <style>
-        /* Основные стили */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+        }
+
         .app-container {
             max-width: 400px;
             margin: 0 auto;
             background-color: #fff;
-            min-height: 100vh;
+            height: 100vh;
+            height: 100dvh;
+            display: flex;
+            flex-direction: column;
             position: relative;
             box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            overflow: hidden;
         }
 
-        /* Header styles */
+        /* Header - фиксированная высота */
         .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 20px;
+            padding: 12px 16px;
             background-color: #fff;
             border-bottom: 1px solid #e0e0e0;
+            flex-shrink: 0;
         }
 
         .date-display {
@@ -31,24 +51,25 @@
         }
 
         .time {
-            font-size: 24px;
+            font-size: 20px;
             font-weight: 500;
             color: #333;
+            line-height: 1.2;
         }
 
         .date {
-            font-size: 14px;
+            font-size: 12px;
             color: #666;
         }
 
         .user-info {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
 
         .user-name {
-            font-size: 18px;
+            font-size: 14px;
             font-weight: 500;
             color: #333;
         }
@@ -56,21 +77,120 @@
         .logout-btn {
             background: none;
             border: none;
-            font-size: 20px;
+            font-size: 18px;
             cursor: pointer;
             color: #999;
-            padding: 5px;
+            padding: 4px;
         }
 
-        .logout-btn:hover {
-            color: #FF6B6B;
+        /* Календарь недели - фиксированная высота */
+        .week-calendar-container {
+            flex-shrink: 0;
+            background: #fff;
+            padding: 8px 12px;
+            border-bottom: 1px solid #e0e0e0;
         }
 
-        /* Schedule styles */
+        .week-navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .week-nav-btn {
+            background: none;
+            border: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #007AFF;
+            font-size: 16px;
+        }
+
+        .week-info {
+            font-size: 12px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .week-calendar {
+            display: flex;
+            justify-content: space-around;
+            gap: 4px;
+        }
+
+        .calendar-day {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 6px 2px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #fff;
+        }
+
+        .calendar-day.active {
+            background: linear-gradient(135deg, #007AFF 0%, #5856D6 100%);
+            color: white;
+        }
+
+        .calendar-day.today {
+            border: 1px solid #007AFF;
+        }
+
+        .calendar-day.active .day-name,
+        .calendar-day.active .day-number {
+            color: white;
+        }
+
+        .day-name {
+            font-size: 10px;
+            color: #666;
+            margin-bottom: 2px;
+        }
+
+        .day-number {
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .today-btn {
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #007AFF;
+            color: white;
+            border: none;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 10px;
+            cursor: pointer;
+            white-space: nowrap;
+            z-index: 10;
+        }
+
+        /* Расписание - основная прокручиваемая область */
+        .schedule-wrapper {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            position: relative;
+            -webkit-overflow-scrolling: touch;
+        }
+
         .schedule {
             position: relative;
-            padding: 20px;
-            min-height: 500px;
+            min-height: 100%;
+            padding-bottom: 60px;
         }
 
         .time-slots {
@@ -80,36 +200,31 @@
         .time-slot {
             display: flex;
             align-items: flex-start;
-            min-height: 60px;
+            min-height: 56px;
             border-bottom: 1px solid #f0f0f0;
             position: relative;
         }
 
         .time-label {
-            width: 50px;
-            font-size: 12px;
+            width: 45px;
+            font-size: 11px;
             color: #999;
-            padding-top: 5px;
+            padding-top: 4px;
+            flex-shrink: 0;
         }
 
         .slot-content {
             flex: 1;
-            height: 60px;
+            height: 56px;
             position: relative;
             cursor: pointer;
-            transition: background 0.2s;
         }
 
-        .slot-content:hover {
-            background-color: #f9f9f9;
-        }
-
-        /* Booking cards */
         .current-bookings {
             position: absolute;
-            top: 20px;
-            left: 70px;
-            right: 20px;
+            top: 0;
+            left: 45px;
+            right: 0;
             pointer-events: none;
         }
 
@@ -118,108 +233,64 @@
             left: 0;
             right: 0;
             background: linear-gradient(135deg, #FFE4E1 0%, #FFD4D1 100%);
-            border-left: 4px solid #FF6B6B;
-            border-radius: 8px;
-            padding: 12px;
+            border-left: 3px solid #FF6B6B;
+            border-radius: 6px;
+            padding: 8px;
             pointer-events: auto;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            transition: transform 0.2s;
-        }
-
-        .booking-card:hover {
-            transform: translateX(2px);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.1);
         }
 
         .booking-time {
-            font-size: 12px;
+            font-size: 10px;
             font-weight: 500;
             color: #FF6B6B;
-            margin-bottom: 4px;
-        }
-
-        .booking-client {
-            font-size: 14px;
-            font-weight: 500;
-            color: #333;
             margin-bottom: 2px;
         }
 
+        .booking-client {
+            font-size: 12px;
+            font-weight: 500;
+            color: #333;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
         .booking-phone {
-            font-size: 11px;
+            font-size: 9px;
             color: #666;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .delete-booking {
             position: absolute;
-            top: 8px;
-            right: 8px;
+            top: 4px;
+            right: 4px;
             background: none;
             border: none;
-            font-size: 18px;
+            font-size: 16px;
             color: #999;
             cursor: pointer;
             padding: 0 4px;
-            transition: color 0.2s;
         }
 
-        .delete-booking:hover {
-            color: #FF6B6B;
+        .no-appointments {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+            font-size: 14px;
         }
 
-        /* Week calendar */
-        .week-calendar {
-            display: flex;
-            justify-content: space-around;
-            padding: 15px 10px;
-            background-color: #fff;
-            border-top: 1px solid #e0e0e0;
-            border-bottom: 1px solid #e0e0e0;
-            overflow-x: auto;
-        }
-
-        .calendar-day {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            cursor: pointer;
-            padding: 8px;
-            border-radius: 50%;
-            min-width: 50px;
-            transition: all 0.2s;
-        }
-
-        .calendar-day.active {
-            background: linear-gradient(135deg, #007AFF 0%, #0056b3 100%);
-            color: white;
-            box-shadow: 0 2px 8px rgba(0,122,255,0.3);
-        }
-
-        .calendar-day.active .day-name,
-        .calendar-day.active .day-number {
-            color: white;
-        }
-
-        .day-name {
-            font-size: 12px;
-            color: #666;
-            margin-bottom: 4px;
-        }
-
-        .day-number {
-            font-size: 16px;
-            font-weight: 500;
-            color: #333;
-        }
-
-        /* Bottom navigation */
+        /* Нижняя навигация - фиксированная высота */
         .bottom-nav {
             display: flex;
             justify-content: space-around;
-            padding: 10px 0;
+            padding: 6px 0;
             background-color: #fff;
             border-top: 1px solid #e0e0e0;
-            position: sticky;
-            bottom: 0;
+            flex-shrink: 0;
         }
 
         .nav-item {
@@ -230,25 +301,40 @@
             border: none;
             cursor: pointer;
             color: #999;
-            font-size: 11px;
-            padding: 8px;
-            transition: color 0.2s;
+            font-size: 10px;
+            padding: 4px;
         }
 
         .nav-item.active {
             color: #007AFF;
         }
 
-        .nav-item:hover {
-            color: #007AFF;
-        }
-
         .nav-item .icon {
-            font-size: 20px;
-            margin-bottom: 4px;
+            font-size: 18px;
+            margin-bottom: 2px;
         }
 
-        /* Modal styles */
+        /* FAB кнопка */
+        .fab-add {
+            position: absolute;
+            bottom: 70px;
+            right: 16px;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #007AFF 0%, #0056b3 100%);
+            color: white;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,122,255,0.4);
+            z-index: 20;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Модальные окна */
         .modal {
             display: none;
             position: fixed;
@@ -266,388 +352,127 @@
         }
 
         .modal-content {
-            position: relative;
             background-color: #fff;
             width: 100%;
             border-radius: 20px 20px 0 0;
-            animation: slideUp 0.3s ease;
-        }
-
-        @keyframes slideUp {
-            from {
-                transform: translateY(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
+            max-height: 80vh;
+            overflow-y: auto;
         }
 
         .modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 20px;
+            padding: 16px;
             border-bottom: 1px solid #e0e0e0;
+            position: sticky;
+            top: 0;
+            background: white;
+            z-index: 10;
         }
 
         .modal-header h2 {
-            font-size: 20px;
+            font-size: 18px;
             color: #333;
         }
 
         .close-modal {
             background: none;
             border: none;
-            font-size: 28px;
+            font-size: 24px;
             cursor: pointer;
             color: #999;
-            transition: color 0.2s;
-        }
-
-        .close-modal:hover {
-            color: #333;
         }
 
         .modal-body {
-            padding: 20px;
+            padding: 16px;
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 16px;
         }
 
         .form-group label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             color: #666;
-            font-size: 14px;
-            font-weight: 500;
+            font-size: 13px;
         }
 
         .form-group input,
-        .form-group select,
-        .form-group textarea {
+        .form-group select {
             width: 100%;
-            padding: 12px;
+            padding: 10px;
             border: 1px solid #ddd;
             border-radius: 8px;
-            font-size: 16px;
-            transition: border-color 0.2s;
-        }
-
-        .form-group input:focus,
-        .form-group select:focus,
-        .form-group textarea:focus {
-            outline: none;
-            border-color: #007AFF;
+            font-size: 14px;
         }
 
         .modal-footer {
-            padding: 20px;
+            padding: 16px;
             border-top: 1px solid #e0e0e0;
             display: flex;
             gap: 10px;
+            position: sticky;
+            bottom: 0;
+            background: white;
         }
 
         .btn-submit {
             flex: 1;
-            padding: 14px;
-            background: linear-gradient(135deg, #007AFF 0%, #0056b3 100%);
+            padding: 12px;
+            background: #007AFF;
             color: white;
             border: none;
             border-radius: 8px;
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 500;
             cursor: pointer;
-            transition: transform 0.2s;
-        }
-
-        .btn-submit:hover {
-            transform: translateY(-1px);
         }
 
         .btn-cancel {
             flex: 1;
-            padding: 14px;
+            padding: 12px;
             background: #f0f0f0;
             color: #666;
             border: none;
             border-radius: 8px;
-            font-size: 16px;
-            font-weight: 500;
-            cursor: pointer;
-        }
-
-        /* Loading spinner */
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #999;
-        }
-
-        .no-appointments {
-            text-align: center;
-            padding: 40px;
-            color: #999;
-        }
-
-        /* Floating action button */
-        .fab-add {
-            position: fixed;
-            bottom: 80px;
-            right: 20px;
-            width: 56px;
-            height: 56px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #007AFF 0%, #0056b3 100%);
-            color: white;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0,122,255,0.4);
-            z-index: 100;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        .fab-add:hover {
-            transform: scale(1.1);
-            box-shadow: 0 6px 16px rgba(0,122,255,0.5);
-        }
-
-        /* Responsive */
-        @media (max-width: 400px) {
-            .app-container {
-                max-width: 100%;
-            }
-        }
-        /* Модальное окно выбора клиента */
-        .selection-modal {
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-
-        .search-client-box {
-            margin-bottom: 20px;
-        }
-
-        .search-input-wrapper {
-            position: relative;
-            display: flex;
-            align-items: center;
-        }
-
-        .search-input-wrapper .search-icon {
-            position: absolute;
-            left: 15px;
-            font-size: 18px;
-            color: #999;
-        }
-
-        #clientSearchInput {
-            width: 100%;
-            padding: 14px 40px 14px 45px;
-            border: 1px solid #e0e0e0;
-            border-radius: 30px;
-            font-size: 16px;
-            background: #f8f9fa;
-            transition: all 0.3s;
-        }
-
-        #clientSearchInput:focus {
-            outline: none;
-            border-color: #007AFF;
-            background: white;
-            box-shadow: 0 2px 8px rgba(0,122,255,0.1);
-        }
-
-        .clear-search {
-            position: absolute;
-            right: 15px;
-            background: none;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            color: #999;
-            padding: 0;
-            width: 30px;
-            height: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-        }
-
-        .clear-search:hover {
-            background: #f0f0f0;
-            color: #333;
-        }
-
-        /* Результаты поиска */
-        .search-results {
-            min-height: 150px;
-            max-height: 300px;
-            overflow-y: auto;
-            margin-bottom: 20px;
-        }
-
-        .search-loading {
-            text-align: center;
-            padding: 30px;
-            color: #999;
-        }
-
-        .no-results {
-            text-align: center;
-            padding: 30px;
-        }
-
-        .no-results-icon {
-            font-size: 48px;
-            opacity: 0.5;
-            display: block;
-            margin-bottom: 10px;
-        }
-
-        .no-results p {
-            color: #999;
-            margin-bottom: 15px;
-        }
-
-        .create-from-search-btn {
-            background: #007AFF;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        .clients-list-modal {
-            max-height: 300px;
-            overflow-y: auto;
-        }
-
-        .client-result-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 12px;
-            border-bottom: 1px solid #f0f0f0;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .client-result-item:hover {
-            background: #f8f9ff;
-        }
-
-        .client-result-info {
-            flex: 1;
-        }
-
-        .client-result-name {
-            font-weight: 500;
-            color: #333;
-            margin-bottom: 4px;
-        }
-
-        .client-result-phone {
-            font-size: 12px;
-            color: #999;
-        }
-
-        .client-result-email {
-            font-size: 11px;
-            color: #ccc;
-            margin-top: 2px;
-        }
-
-        .select-client-btn {
-            background: #007AFF;
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .select-client-btn:hover {
-            background: #0056b3;
-            transform: scale(1.02);
-        }
-
-        /* Разделитель */
-        .divider {
-            text-align: center;
-            margin: 20px 0;
-            position: relative;
-        }
-
-        .divider::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 50%;
-            width: 100%;
-            height: 1px;
-            background: #e0e0e0;
-        }
-
-        .divider span {
-            background: white;
-            padding: 0 10px;
-            position: relative;
-            color: #999;
-            font-size: 12px;
-        }
-
-        .create-new-client-btn {
-            width: 100%;
-            padding: 12px;
-            background: none;
-            border: 1px dashed #007AFF;
-            border-radius: 30px;
-            color: #007AFF;
             font-size: 14px;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: all 0.3s;
         }
 
-        .create-new-client-btn:hover {
-            background: #E8F0FE;
-            border-color: #007AFF;
+        /* Скрытие скроллбара для WebKit */
+        .schedule-wrapper::-webkit-scrollbar {
+            width: 0;
+            background: transparent;
         }
 
-        .create-new-client-btn span {
-            font-size: 18px;
-            font-weight: bold;
-        }
-
-        .required {
-            color: #FF3B30;
-        }
-
-        /* Анимация загрузки */
-        @keyframes pulse {
-            0%, 100% {
-                opacity: 1;
+        /* Адаптация для очень маленьких экранов */
+        @media (max-width: 380px) {
+            .time-label {
+                width: 40px;
+                font-size: 10px;
             }
-            50% {
-                opacity: 0.5;
-            }
-        }
 
-        .search-loading {
-            animation: pulse 1.5s ease-in-out infinite;
+            .current-bookings {
+                left: 40px;
+            }
+
+            .booking-client {
+                font-size: 11px;
+            }
+
+            .calendar-day {
+                padding: 4px 2px;
+            }
+
+            .day-number {
+                font-size: 12px;
+            }
+
+            .day-name {
+                font-size: 9px;
+            }
         }
     </style>
 {% endblock %}
@@ -666,37 +491,25 @@
             </div>
         </div>
 
-        <!-- Расписание на день -->
-        <div class="schedule">
-            <div class="time-slots">
-                {% for hour in 8..19 %}
-                    <div class="time-slot">
-                        <span class="time-label">{{ "%02d:00"|format(hour) }}</span>
-                        <div class="slot-content" data-hour="{{ hour }}"></div>
-                    </div>
-                {% endfor %}
-            </div>
-
-            <div class="current-bookings" id="currentBookings">
-                <!-- Записи будут загружены через JavaScript -->
-            </div>
-        </div>
-
         <!-- Календарь недели -->
         <div class="week-calendar-container">
             <div class="week-navigation">
-                <button class="week-nav-btn" id="prevWeekBtn" title="Предыдущая неделя">
-                    <span class="arrow">←</span>
-                </button>
+                <button class="week-nav-btn" id="prevWeekBtn">←</button>
                 <div class="week-info" id="weekInfo"></div>
-                <button class="week-nav-btn" id="nextWeekBtn" title="Следующая неделя">
-                    <span class="arrow">→</span>
-                </button>
+                <button class="week-nav-btn" id="nextWeekBtn">→</button>
             </div>
-            <div class="week-calendar" id="weekCalendar">
-                <!-- Дни недели будут добавлены через JavaScript -->
-            </div>
+            <div class="week-calendar" id="weekCalendar"></div>
             <button class="today-btn" id="todayBtn">Сегодня</button>
+        </div>
+
+        <!-- Расписание (прокручиваемая область) -->
+        <div class="schedule-wrapper">
+            <div class="schedule">
+                <div class="time-slots" id="timeSlotsContainer">
+                    <!-- Слоты времени будут сгенерированы через JS -->
+                </div>
+                <div class="current-bookings" id="currentBookings"></div>
+            </div>
         </div>
 
         <!-- Кнопка добавления -->
@@ -774,82 +587,7 @@
             </div>
         </div>
     </div>
-    <!-- Модальное окно выбора клиента -->
-    <div id="clientSelectionModal" class="modal">
-        <div class="modal-content selection-modal">
-            <div class="modal-header">
-                <h3>Выбор клиента</h3>
-                <button class="close-modal" onclick="closeSelectionModal()">&times;</button>
-            </div>
-
-            <div class="modal-body">
-                <!-- Поиск клиента -->
-                <div class="search-client-box">
-                    <div class="search-input-wrapper">
-                        <span class="search-icon">🔍</span>
-                        <input type="text" id="clientSearchInput"
-                               placeholder="Введите имя или телефон клиента..."
-                               autocomplete="off">
-                        <button class="clear-search" id="clearSearchBtn" style="display: none;">×</button>
-                    </div>
-                </div>
-
-                <!-- Результаты поиска -->
-                <div id="searchResults" class="search-results">
-                    <div class="search-loading" style="display: none;">Поиск...</div>
-                    <div class="no-results" style="display: none;">
-                        <span class="no-results-icon">👤</span>
-                        <p>Клиент не найден</p>
-                        <button class="create-from-search-btn" id="createFromSearchBtn">Создать нового клиента</button>
-                    </div>
-                    <div class="clients-list-modal" id="clientsListModal"></div>
-                </div>
-
-                <!-- Секция создания нового клиента -->
-                <div class="divider">
-                    <span>или</span>
-                </div>
-
-                <button class="create-new-client-btn" id="openCreateClientBtn">
-                    <span>+</span> Создать нового клиента
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Модальное окно создания клиента -->
-    <div id="createClientModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Новый клиент</h3>
-                <button class="close-modal" onclick="closeCreateClientModal()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <form id="quickClientForm">
-                    <div class="form-group">
-                        <label for="newClientName">Имя <span class="required">*</span></label>
-                        <input type="text" id="newClientName" placeholder="Введите имя клиента" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="newClientPhone">Телефон <span class="required">*</span></label>
-                        <input type="tel" id="newClientPhone" placeholder="+7 999 123-45-67" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="newClientEmail">Email (опционально)</label>
-                        <input type="email" id="newClientEmail" placeholder="email@example.com">
-                    </div>
-                    <div class="form-group">
-                        <label for="newClientNote">Примечание (опционально)</label>
-                        <textarea id="newClientNote" rows="2" placeholder="Дополнительная информация"></textarea>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-cancel" onclick="closeCreateClientModal()">Отмена</button>
-                <button class="btn-submit" onclick="createAndSelectClient()">Создать и выбрать</button>
-            </div>
-        </div>
-    </div>
+{% endblock %}
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
