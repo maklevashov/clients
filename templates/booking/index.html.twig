@@ -838,6 +838,7 @@
                     <div class="form-group">
                         <label for="appointmentTime">Время <span class="required">*</span></label>
                         <select id="appointmentTime" required>
+                            <option value="07:00">07:00 - 10:00</option>
                             <option value="08:00">08:00 - 11:00</option>
                             <option value="09:00">09:00 - 12:00</option>
                             <option value="10:00">10:00 - 13:00</option>
@@ -1760,6 +1761,46 @@
             if (typeof selectDate === 'function') {
                 selectDate(new Date());
             }
+        }
+
+        // Простая версия showNotification без лишних зависимостей
+        function showNotification(message, type = 'info') {
+            // Удаляем старые уведомления
+            $('.notification-toast').remove();
+
+            // Создаем уведомление
+            const colors = {
+                success: '#34C759',
+                error: '#FF3B30',
+                warning: '#FF9500',
+                info: '#007AFF'
+            };
+
+            const $notification = $('<div>')
+                .addClass('notification-toast')
+                .css({
+                    position: 'fixed',
+                    bottom: '80px',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    background: colors[type] || colors.info,
+                    color: 'white',
+                    padding: '10px 20px',
+                    borderRadius: '25px',
+                    fontSize: '14px',
+                    zIndex: 10000,
+                    boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
+                    whiteSpace: 'nowrap'
+                })
+                .text(message);
+
+            $('body').append($notification);
+
+            setTimeout(() => {
+                $notification.fadeOut(300, function() {
+                    $(this).remove();
+                });
+            }, 3000);
         }
 
         // Экспорт функций для использования в других файлах
