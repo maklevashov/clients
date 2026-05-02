@@ -131,8 +131,18 @@ api_notifications_read_all:
     controller: App\Controller\BookingController::markAllNotificationsRead
     methods: ['POST']
 
+api_clients_search:
+    path: /api/clients/search
+    controller: App\Controller\BookingController::searchClients
+    methods: ['GET']
 
-    ##todo переделать на jwt (возможно не надо)
+api_clients_recent:
+    path: /api/clients/recent
+    controller: App\Controller\BookingController::getRecentClients
+    methods: ['GET']
+
+
+    ##todo переделать на jwt (возможно не надо????)
 
     # JWT авторизация
 #    api_login_check:
