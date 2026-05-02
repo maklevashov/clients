@@ -80,7 +80,7 @@
         .time-slot {
             display: flex;
             align-items: flex-start;
-            min-height: 60px;
+            min-height: 40px;
             border-bottom: 1px solid #f0f0f0;
             position: relative;
         }
@@ -94,10 +94,9 @@
 
         .slot-content {
             flex: 1;
-            height: 60px;
+            height: 40px;
             position: relative;
             cursor: pointer;
-            transition: background 0.2s;
         }
 
         .slot-content:hover {
@@ -124,6 +123,10 @@
             pointer-events: auto;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             transition: transform 0.2s;
+        }
+
+        .booking-card {
+            height: 120px;
         }
 
         .booking-card:hover {
@@ -752,6 +755,7 @@
                     <div class="form-group">
                         <label for="appointmentTime">Время:</label>
                         <select id="appointmentTime" required>
+                            <option value="08:00">07:00 - 11:00</option>
                             <option value="08:00">08:00 - 11:00</option>
                             <option value="09:00">09:00 - 12:00</option>
                             <option value="10:00">10:00 - 13:00</option>
@@ -979,10 +983,10 @@
             let html = '';
             appointments.forEach(apt => {
                 const hour = parseInt(apt.start_time.split(':')[0]);
-                const topPosition = (hour - 8) * 60;
+                const topPosition = (hour - 8) * 40;
 
                 html += `
-                <div class="booking-card" data-id="${apt.id}" style="top: ${topPosition}px; height: 180px;">
+                <div class="booking-card" data-id="${apt.id}" style="top: ${topPosition}px; height: 120px;">
                     <div class="booking-time">${apt.start_time} - ${apt.end_time}</div>
                     <div class="booking-client">${escapeHtml(apt.client_name)}</div>
                     <div class="booking-phone">${escapeHtml(apt.client_phone)}</div>
