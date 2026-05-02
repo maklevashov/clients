@@ -141,6 +141,26 @@ api_clients_recent:
     controller: App\Controller\BookingController::getRecentClients
     methods: ['GET']
 
+app_profile:
+    path: /profile
+    controller: App\Controller\BookingController::profile
+    methods: ['GET']
+
+api_user_statistics:
+    path: /api/user/statistics
+    controller: App\Controller\BookingController::getUserStatistics
+    methods: ['GET']
+
+api_user_profile:
+    path: /api/user/profile
+    controller: App\Controller\BookingController::updateProfile
+    methods: ['POST']
+
+api_user_change_password:
+    path: /api/user/change-password
+    controller: App\Controller\BookingController::changePassword
+    methods: ['POST']
+
 
     ##todo переделать на jwt (возможно не надо????)
 

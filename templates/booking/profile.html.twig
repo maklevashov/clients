@@ -1,0 +1,784 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Профиль пользователя{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .profile-container {
+            background: #f8f9fa;
+            min-height: 100vh;
+            padding-bottom: 70px;
+        }
+
+        /* Шапка профиля */
+        .profile-header {
+            background: linear-gradient(135deg, #007AFF 0%, #5856D6 100%);
+            padding: 40px 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: white;
+            font-size: 20px;
+            transition: all 0.2s;
+        }
+
+        .back-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            font-size: 50px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .profile-avatar:hover {
+            transform: scale(1.05);
+            background: rgba(255,255,255,0.3);
+        }
+
+        .change-avatar-btn {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            background: #007AFF;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: white;
+            font-size: 14px;
+        }
+
+        .profile-name {
+            font-size: 24px;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 5px;
+        }
+
+        .profile-email {
+            font-size: 14px;
+            color: rgba(255,255,255,0.9);
+        }
+
+        /* Основной контент */
+        .profile-content {
+            padding: 20px;
+        }
+
+        .info-section {
+            background: white;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            padding: 15px 20px;
+            background: #fff;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title .icon {
+            font-size: 18px;
+        }
+
+        .info-row {
+            display: flex;
+            padding: 15px 20px;
+            border-bottom: 1px solid #f0f0f0;
+            background: #fff;
+            transition: background 0.2s;
+        }
+
+        .info-row:hover {
+            background: #f8f9fa;
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            width: 100px;
+            font-size: 14px;
+            color: #999;
+            font-weight: 500;
+        }
+
+        .info-value {
+            flex: 1;
+            font-size: 16px;
+            color: #333;
+            font-weight: 500;
+            word-break: break-word;
+        }
+
+        .edit-btn {
+            background: none;
+            border: none;
+            color: #007AFF;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 0 8px;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+
+        .edit-btn:hover {
+            opacity: 1;
+        }
+
+        /* Статистика */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            padding: 15px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #007AFF;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        /* Кнопка выхода */
+        .logout-section {
+            padding: 20px;
+        }
+
+        .logout-btn-full {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #FF3B30 0%, #DC3545 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: transform 0.2s;
+        }
+
+        .logout-btn-full:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Модальное окно редактирования */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: flex-end;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            width: 100%;
+            border-radius: 20px 20px 0 0;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(100%);
+            }
+            to {
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .modal-header h3 {
+            font-size: 18px;
+            color: #333;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #666;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #007AFF;
+        }
+
+        .modal-footer {
+            padding: 20px;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-submit {
+            flex: 1;
+            padding: 14px;
+            background: #007AFF;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-cancel {
+            flex: 1;
+            padding: 14px;
+            background: #f0f0f0;
+            color: #666;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        /* Нижняя навигация */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            max-width: 400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            background: #fff;
+            border-top: 1px solid #e0e0e0;
+            z-index: 100;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #999;
+            font-size: 11px;
+            padding: 8px;
+            transition: color 0.2s;
+        }
+
+        .nav-item.active {
+            color: #007AFF;
+        }
+
+        .nav-item .icon {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+
+        .required {
+            color: #FF3B30;
+        }
+
+        /* Уведомления */
+        .notification-toast {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #34C759;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 14px;
+            z-index: 10000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            animation: fadeInOut 3s ease;
+        }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            10% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            90% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="profile-container">
+        <!-- Шапка профиля -->
+        <div class="profile-header">
+            <button class="back-btn" onclick="history.back()">←</button>
+            <div class="profile-avatar" id="avatarBtn">
+                <span id="avatarEmoji">👤</span>
+                <div class="change-avatar-btn">✎</div>
+            </div>
+            <div class="profile-name" id="profileName">{{ app.user.name }}</div>
+            <div class="profile-email" id="profileEmail">{{ app.user.email }}</div>
+        </div>
+
+        <!-- Статистика -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="totalClients">0</div>
+                <div class="stat-label">Клиентов</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="totalAppointments">0</div>
+                <div class="stat-label">Записей</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="memberDays">0</div>
+                <div class="stat-label">Дней в системе</div>
+            </div>
+        </div>
+
+        <!-- Основная информация -->
+        <div class="profile-content">
+            <div class="info-section">
+                <div class="section-title">
+                    <span class="icon">📋</span>
+                    <span>Основная информация</span>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Имя</div>
+                    <div class="info-value" id="displayName">{{ app.user.name }}</div>
+                    <button class="edit-btn" onclick="openEditModal('name')">✎</button>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Email</div>
+                    <div class="info-value" id="displayEmail">{{ app.user.email }}</div>
+                    <button class="edit-btn" onclick="openEditModal('email')">✎</button>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Телефон</div>
+                    <div class="info-value" id="displayPhone">{{ app.user.phone ?: 'Не указан' }}</div>
+                    <button class="edit-btn" onclick="openEditModal('phone')">✎</button>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Язык</div>
+                    <div class="info-value" id="displayLanguage">Русский</div>
+                    <button class="edit-btn" onclick="openEditModal('language')">✎</button>
+                </div>
+            </div>
+
+            <!-- Безопасность -->
+            <div class="info-section">
+                <div class="section-title">
+                    <span class="icon">🔒</span>
+                    <span>Безопасность</span>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Пароль</div>
+                    <div class="info-value">••••••••</div>
+                    <button class="edit-btn" onclick="openChangePasswordModal()">Изменить</button>
+                </div>
+            </div>
+
+            <!-- О приложении -->
+            <div class="info-section">
+                <div class="section-title">
+                    <span class="icon">ℹ️</span>
+                    <span>О приложении</span>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Версия</div>
+                    <div class="info-value">2.0.0</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Разработчик</div>
+                    <div class="info-value">Booking System</div>
+                </div>
+            </div>
+
+            <!-- Выход -->
+            <div class="logout-section">
+                <button class="logout-btn-full" id="logoutBtnFull">
+                    <span>🚪</span> Выйти из аккаунта
+                </button>
+            </div>
+        </div>
+
+        <!-- Нижняя навигация -->
+        <div class="bottom-nav">
+            <button class="nav-item" data-page="journal">
+                <span class="icon">📋</span>
+                <span>Журнал</span>
+            </button>
+            <button class="nav-item" data-page="schedule">
+                <span class="icon">📅</span>
+                <span>График</span>
+            </button>
+            <button class="nav-item" data-page="clients">
+                <span class="icon">👥</span>
+                <span>Клиенты</span>
+            </button>
+            <button class="nav-item" data-page="notifications">
+                <span class="icon">🔔</span>
+                <span>Уведомление</span>
+            </button>
+            <button class="nav-item active" data-page="profile">
+                <span class="icon">👤</span>
+                <span>Профиль</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Модальное окно редактирования поля -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="editModalTitle">Редактирование</h3>
+                <button class="close-modal" onclick="closeModal('editModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label id="editFieldLabel">Новое значение</label>
+                    <input type="text" id="editFieldValue" placeholder="Введите значение">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="closeModal('editModal')">Отмена</button>
+                <button class="btn-submit" onclick="saveField()">Сохранить</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно смены пароля -->
+    <div id="passwordModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Смена пароля</h3>
+                <button class="close-modal" onclick="closeModal('passwordModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Текущий пароль</label>
+                    <input type="password" id="currentPassword" placeholder="Введите текущий пароль">
+                </div>
+                <div class="form-group">
+                    <label>Новый пароль</label>
+                    <input type="password" id="newPassword" placeholder="Введите новый пароль">
+                </div>
+                <div class="form-group">
+                    <label>Подтверждение пароля</label>
+                    <input type="password" id="confirmPassword" placeholder="Подтвердите новый пароль">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="closeModal('passwordModal')">Отмена</button>
+                <button class="btn-submit" onclick="changePassword()">Изменить пароль</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        let currentEditField = null;
+
+        $(document).ready(function() {
+            loadStatistics();
+
+            // Навигация
+            $('.nav-item').click(function() {
+                const page = $(this).data('page');
+                if (page === 'journal') {
+                    window.location.href = '/';
+                } else if (page === 'schedule') {
+                    window.location.href = '/schedule';
+                } else if (page === 'clients') {
+                    window.location.href = '/clients';
+                } else if (page === 'notifications') {
+                    window.location.href = '/notifications';
+                }
+            });
+
+            // Выход
+            $('#logoutBtnFull').click(function() {
+                if (confirm('Вы уверены, что хотите выйти?')) {
+                    window.location.href = '/logout';
+                }
+            });
+
+            // Смена аватара
+            $('#avatarBtn').click(function() {
+                const emojis = ['👤', '👨', '👩', '🧑', '👨‍💼', '👩‍💼', '👨‍🎨', '👩‍🎨', '⭐', '🌟'];
+                const newEmoji = emojis[Math.floor(Math.random() * emojis.length)];
+                $('#avatarEmoji').text(newEmoji);
+                showNotification('Аватар изменен', 'success');
+            });
+        });
+
+        function loadStatistics() {
+            $.ajax({
+                url: '/api/user/statistics',
+                method: 'GET',
+                success: function(data) {
+                    $('#totalClients').text(data.totalClients || 0);
+                    $('#totalAppointments').text(data.totalAppointments || 0);
+                    $('#memberDays').text(data.memberDays || 0);
+                }
+            });
+        }
+
+        function openEditModal(field) {
+            currentEditField = field;
+
+            const titles = {
+                'name': 'Редактирование имени',
+                'email': 'Редактирование email',
+                'phone': 'Редактирование телефона',
+                'language': 'Выбор языка'
+            };
+
+            const labels = {
+                'name': 'Новое имя',
+                'email': 'Новый email',
+                'phone': 'Новый телефон',
+                'language': 'Язык интерфейса'
+            };
+
+            $('#editModalTitle').text(titles[field]);
+            $('#editFieldLabel').text(labels[field]);
+
+            if (field === 'language') {
+                $('#editFieldValue').replaceWith(`
+                <select id="editFieldValue">
+                    <option value="ru">Русский</option>
+                    <option value="en">English</option>
+                </select>
+            `);
+            } else {
+                const currentValue = $('#display' + field.charAt(0).toUpperCase() + field.slice(1)).text();
+                if (currentValue !== 'Не указан') {
+                    $('#editFieldValue').val(currentValue);
+                } else {
+                    $('#editFieldValue').val('');
+                }
+            }
+
+            $('#editModal').addClass('show');
+        }
+
+        function saveField() {
+            let value = $('#editFieldValue').val();
+
+            if (!value && currentEditField !== 'language') {
+                showNotification('Пожалуйста, заполните поле', 'error');
+                return;
+            }
+
+            $.ajax({
+                url: '/api/user/profile',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    field: currentEditField,
+                    value: value
+                }),
+                success: function(response) {
+                    if (response.success) {
+                        // Обновляем отображение
+                        const displayValue = value || 'Не указан';
+                        $('#display' + currentEditField.charAt(0).toUpperCase() + currentEditField.slice(1)).text(displayValue);
+
+                        if (currentEditField === 'name') {
+                            $('#profileName').text(displayValue);
+                            $('.user-name').text(displayValue);
+                        } else if (currentEditField === 'email') {
+                            $('#profileEmail').text(displayValue);
+                        }
+
+                        closeModal('editModal');
+                        showNotification('Данные успешно обновлены', 'success');
+                    }
+                },
+                error: function(xhr) {
+                    showNotification(xhr.responseJSON?.error || 'Ошибка при обновлении', 'error');
+                }
+            });
+        }
+
+        function openChangePasswordModal() {
+            $('#currentPassword').val('');
+            $('#newPassword').val('');
+            $('#confirmPassword').val('');
+            $('#passwordModal').addClass('show');
+        }
+
+        function changePassword() {
+            const currentPassword = $('#currentPassword').val();
+            const newPassword = $('#newPassword').val();
+            const confirmPassword = $('#confirmPassword').val();
+
+            if (!currentPassword || !newPassword || !confirmPassword) {
+                showNotification('Заполните все поля', 'error');
+                return;
+            }
+
+            if (newPassword !== confirmPassword) {
+                showNotification('Новый пароль и подтверждение не совпадают', 'error');
+                return;
+            }
+
+            if (newPassword.length < 6) {
+                showNotification('Пароль должен содержать минимум 6 символов', 'error');
+                return;
+            }
+
+            $.ajax({
+                url: '/api/user/change-password',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    current_password: currentPassword,
+                    new_password: newPassword
+                }),
+                success: function(response) {
+                    if (response.success) {
+                        closeModal('passwordModal');
+                        showNotification('Пароль успешно изменен', 'success');
+                    }
+                },
+                error: function(xhr) {
+                    showNotification(xhr.responseJSON?.error || 'Ошибка при смене пароля', 'error');
+                }
+            });
+        }
+
+        function closeModal(modalId) {
+            $(`#${modalId}`).removeClass('show');
+        }
+
+        function showNotification(message, type = 'info') {
+            $('.notification-toast').remove();
+
+            const colors = {
+                success: '#34C759',
+                error: '#FF3B30',
+                info: '#007AFF'
+            };
+
+            const $notification = $('<div>')
+                .addClass('notification-toast')
+                .css('background', colors[type] || colors.info)
+                .text(message);
+
+            $('body').append($notification);
+
+            setTimeout(() => {
+                $notification.remove();
+            }, 3000);
+        }
+
+        window.openEditModal = openEditModal;
+        window.saveField = saveField;
+        window.openChangePasswordModal = openChangePasswordModal;
+        window.changePassword = changePassword;
+        window.closeModal = closeModal;
+    </script>
+{% endblock %}

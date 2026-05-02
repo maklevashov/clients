@@ -593,4 +593,120 @@ class BookingController extends AbstractController
 
         return $this->json($data);
     }
+
+    #[Route('/profile', name: 'app_profile')]
+    public function profile(): Response
+    {
+        return $this->render('booking/profile.html.twig');
+    }
+
+    #[Route('/api/user/statistics', name: 'api_user_statistics', methods: ['GET'])]
+    public function getUserStatistics(EntityManagerInterface $entityManager): JsonResponse
+    {
+        $user = $this->getUser();
+
+        if (!$user) {
+            return $this->json(['error' => 'Unauthorized'], 401);
+        }
+
+        $totalClients = $entityManager->getRepository(Client::class)
+            ->createQueryBuilder('c')
+            ->select('COUNT(c.id)')
+            ->where('c.user = :user')
+            ->setParameter('user', $user)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        $totalAppointments = $entityManager->getRepository(Appointment::class)
+            ->createQueryBuilder('a')
+            ->select('COUNT(a.id)')
+            ->where('a.user = :user')
+            ->setParameter('user', $user)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        $createdAt = $user->getCreatedAt();
+        $now = new \DateTime();
+        $memberDays = $createdAt->diff($now)->days;
+
+        return $this->json([
+            'totalClients' => (int) $totalClients,
+            'totalAppointments' => (int) $totalAppointments,
+            'memberDays' => $memberDays
+        ]);
+    }
+
+    #[Route('/api/user/profile', name: 'api_user_profile', methods: ['POST'])]
+    public function updateProfile(Request $request, EntityManagerInterface $entityManager): JsonResponse
+    {
+        $user = $this->getUser();
+
+        if (!$user) {
+            return $this->json(['error' => 'Unauthorized'], 401);
+        }
+
+        $data = json_decode($request->getContent(), true);
+        $field = $data['field'];
+        $value = trim($data['value']);
+
+        switch ($field) {
+            case 'name':
+                if (empty($value)) {
+                    return $this->json(['error' => 'Имя не может быть пустым'], 400);
+                }
+                $user->setName($value);
+                break;
+            case 'email':
+                if (empty($value) || !filter_var($value, FILTER_VALIDATE_EMAIL)) {
+                    return $this->json(['error' => 'Введите корректный email'], 400);
+                }
+                // Проверка уникальности email
+                $existingUser = $entityManager->getRepository(User::class)
+                    ->findOneBy(['email' => $value]);
+                if ($existingUser && $existingUser->getId() !== $user->getId()) {
+                    return $this->json(['error' => 'Этот email уже используется'], 400);
+                }
+                $user->setEmail($value);
+                break;
+            case 'phone':
+                $user->setPhone($value ?: null);
+                break;
+            case 'language':
+                $user->setLanguage($value);
+                break;
+            default:
+                return $this->json(['error' => 'Неверное поле'], 400);
+        }
+
+        $entityManager->flush();
+
+        return $this->json(['success' => true]);
+    }
+
+    #[Route('/api/user/change-password', name: 'api_user_change_password', methods: ['POST'])]
+    public function changePassword(Request $request, UserPasswordHasherInterface $passwordHasher, EntityManagerInterface $entityManager): JsonResponse
+    {
+        $user = $this->getUser();
+
+        if (!$user) {
+            return $this->json(['error' => 'Unauthorized'], 401);
+        }
+
+        $data = json_decode($request->getContent(), true);
+        $currentPassword = $data['current_password'];
+        $newPassword = $data['new_password'];
+
+        if (!$passwordHasher->isPasswordValid($user, $currentPassword)) {
+            return $this->json(['error' => 'Текущий пароль неверен'], 400);
+        }
+
+        if (strlen($newPassword) < 6) {
+            return $this->json(['error' => 'Пароль должен содержать минимум 6 символов'], 400);
+        }
+
+        $user->setPassword($passwordHasher->hashPassword($user, $newPassword));
+        $entityManager->flush();
+
+        return $this->json(['success' => true]);
+    }
 }
