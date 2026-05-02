@@ -1252,6 +1252,8 @@
         function createAndSelectClient() {
             const name = $('#newClientName').val().trim();
             const phone = $('#newClientPhone').val().trim();
+            console.log('Name:', name);
+            console.log('Phone:', phone);
 
             if (!name || !phone) {
                 alert('Заполните имя и телефон');
@@ -1264,7 +1266,9 @@
                 contentType: 'application/json',
                 data: JSON.stringify({ name: name, phone: phone }),
                 success: function(response) {
+                    console.log('responseAjax')
                     if (response.success) {
+                        console.log(respose_success);
                         // Закрываем все модальные окна
                         $('.modal').removeClass('show');
 
