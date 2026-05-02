@@ -1377,7 +1377,7 @@
             let html = '';
             appointments.forEach(apt => {
                 const hour = parseInt(apt.start_time.split(':')[0]);
-                const topPosition = (hour - 8) * 40;
+                const topPosition = (hour - 7) * 40;
 
                 html += `
                 <div class="booking-card" data-id="${apt.id}" style="top: ${topPosition}px; height: 120px;">
