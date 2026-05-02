@@ -564,7 +564,7 @@ body {
 /* Кнопка "Сегодня" */
 .today-btn {
     position: absolute;
-    bottom: -12px;
+    bottom: 70px;
     left: 50%;
     transform: translateX(-50%);
     background: #007AFF;
