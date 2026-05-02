@@ -1252,55 +1252,51 @@
         function createAndSelectClient() {
             const name = $('#newClientName').val().trim();
             const phone = $('#newClientPhone').val().trim();
-            const email = $('#newClientEmail').val().trim();
-            const note = $('#newClientNote').val().trim();
 
             if (!name || !phone) {
-                alert('Пожалуйста, заполните имя и телефон клиента');
+                alert('Заполните имя и телефон');
                 return;
             }
-
-            const $submitBtn = $('#createClientModal .btn-submit');
-            const originalText = $submitBtn.text();
-            $submitBtn.text('Создание...').prop('disabled', true);
 
             $.ajax({
                 url: '/api/clients',
                 method: 'POST',
                 contentType: 'application/json',
-                data: JSON.stringify({
-                    name: name,
-                    phone: phone,
-                    email: email || null,
-                    note: note || null
-                }),
+                data: JSON.stringify({ name: name, phone: phone }),
                 success: function(response) {
-                    if (response.success && response.id) {
-                        // Закрываем окно создания
-                        closeModal('createClientModal');
+                    if (response.success) {
+                        // Закрываем все модальные окна
+                        $('.modal').removeClass('show');
 
                         // Очищаем форму
                         $('#newClientName').val('');
                         $('#newClientPhone').val('');
-                        $('#newClientEmail').val('');
-                        $('#newClientNote').val('');
 
-                        // Выбираем созданного клиента
-                        handleClientSelection(response.id, name, phone);
+                        // Обновляем поле выбора клиента в форме
+                        $('#selectedClientIdInput').val(response.id);
+                        $('#selectedClientDisplay').text(name).removeClass('placeholder');
 
-                        showNotification('Клиент успешно создан', 'success');
+                        // Добавляем информацию
+                        $('.selected-client-info').remove();
+                        $('#clientSelectField').after(`
+                            <div class="selected-client-info">
+                                <div>
+                                    <div class="selected-client-name">${escapeHtml(name)}</div>
+                                    <div class="selected-client-phone">${escapeHtml(phone)}</div>
+                                </div>
+                                <button type="button" class="clear-client-btn" onclick="resetSelectedClient()">✕</button>
+                            </div>
+                        `);
+
+                        // Показываем уведомление
+                        showNotification('Клиент создан и выбран', 'success');
                     }
                 },
                 error: function(xhr) {
-                    alert('Ошибка при создании клиента: ' + (xhr.responseJSON?.error || 'Неизвестная ошибка'));
-                },
-                complete: function() {
-                    $submitBtn.text(originalText).prop('disabled', false);
+                    alert('Ошибка: ' + (xhr.responseJSON?.error || 'Неизвестная ошибка'));
                 }
             });
         }
-
-
 
         // Обновление времени
         function initTimeUpdate() {
