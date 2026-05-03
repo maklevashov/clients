@@ -1557,12 +1557,10 @@
                     if (this.distX > 0) {
                         // Свайп вправо - предыдущая неделя
                         if (this.callbacks.onSwipeRight) {
-                            this.callbacks.onSwipeRight();
                         }
                     } else if (this.distX < 0) {
                         // Свайп влево - следующая неделя
                         if (this.callbacks.onSwipeLeft) {
-                            this.callbacks.onSwipeLeft();
                         }
                     }
                 }
@@ -1587,14 +1585,12 @@
                 new SwipeHandler(weekCalendar, {
                     onSwipeLeft: () => {
                         // Свайп влево - следующая неделя
-                        e.preventDefault();
                         currentWeekOffset++;
                         updateWeekCalendar();
                         animateCalendarSlide('left');
                     },
                     onSwipeRight: () => {
                         // Свайп вправо - предыдущая неделя
-                        e.preventDefault();
                         currentWeekOffset--;
                         updateWeekCalendar();
                         animateCalendarSlide('right');
