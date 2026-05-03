@@ -431,6 +431,14 @@
             border-radius: 8px;
             font-size: 16px;
         }
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.2s;
+        }
 
         .modal-footer {
             padding: 20px;
@@ -1578,6 +1586,14 @@
                 month: 'long',
                 year: 'numeric'
             });
+        }
+
+        // Защита от XSS
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
     </script>
 {% endblock %}
