@@ -1585,14 +1585,14 @@
             const weekCalendar = document.querySelector('.week-calendar');
             if (weekCalendar) {
                 new SwipeHandler(weekCalendar, {
-                    onSwipeLeft: () => {
+                    onSwipeLeft: (e) => {
                         // Свайп влево - следующая неделя
                         e.preventDefault();
                         currentWeekOffset++;
                         updateWeekCalendar();
                         animateCalendarSlide('left');
                     },
-                    onSwipeRight: () => {
+                    onSwipeRight: (e) => {
                         // Свайп вправо - предыдущая неделя
                         e.preventDefault();
                         currentWeekOffset--;
