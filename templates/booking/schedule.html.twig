@@ -1106,7 +1106,7 @@
                 dayCounter++;
             }
 
-            const today = new Date();
+            const today = new Date();class
             const selectedDateStr = `${selectedDate.getFullYear()}-${selectedDate.getMonth()}-${selectedDate.getDate()}`;
 
             for (let i = 1; i <= daysInMonth; i++) {
@@ -1126,7 +1126,7 @@
                      data-month="${currentMonth}"
                      data-day="${i}">
                     <div class="day-number">${i}</div>
-                    ${capacity.bookedCount > 0 ? `<div class="appointments-count ${capacity.bookedCount}">${capacity.bookedCount}</div>` : ''}
+                    ${capacity.bookedCount > 0 ? `<div class="appointments-count ${capacity.class}">${capacity.bookedCount}</div>` : ''}
                     <div class="capacity-indicator">
                         <div class="capacity-fill ${capacity.class}" style="width: ${Math.min(capacity.percentage, 100)}%"></div>
                     </div>
