@@ -718,6 +718,70 @@
         </div>
     </div>
 
+    <!-- Модальное окно выбора клиента -->
+    <div id="clientSelectionModal" class="modal">
+        <div class="modal-content selection-modal">
+            <div class="modal-header">
+                <h3>Выбор клиента</h3>
+                <button class="close-modal" onclick="closeModal('clientSelectionModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="search-client-box">
+                    <div class="search-input-wrapper">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="clientSearchInput" placeholder="Введите имя или телефон..." autocomplete="off">
+                        <button class="clear-search" id="clearSearchBtn" style="display: none;">×</button>
+                    </div>
+                </div>
+                <div id="searchResults" class="search-results">
+                    <div class="search-loading" style="display: none;">Поиск...</div>
+                    <div class="no-results" style="display: none;">
+                        <span class="no-results-icon">👤</span>
+                        <p>Клиент не найден</p>
+                        <button class="create-from-search-btn" onclick="openCreateClientFromSelection()">Создать клиента</button>
+                    </div>
+                    <div id="clientsListModal" class="clients-list-modal"></div>
+                </div>
+                <div class="divider"><span>или</span></div>
+                <button class="create-new-client-btn" onclick="openCreateClientFromSelection()">+ Создать нового клиента</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно создания клиента -->
+    <div id="createClientModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Новый клиент</h3>
+                <button class="close-modal" onclick="closeModal('createClientModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="quickClientForm">
+                    <div class="form-group">
+                        <label>Имя <span class="required">*</span></label>
+                        <input type="text" id="newClientName" placeholder="Введите имя" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Телефон <span class="required">*</span></label>
+                        <input type="tel" id="newClientPhone" placeholder="+7 999 123-45-67" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="newClientEmail" placeholder="email@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Примечание</label>
+                        <textarea id="newClientNote" rows="2" placeholder="Дополнительная информация"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="closeModal('createClientModal')">Отмена</button>
+                <button class="btn-submit" onclick="createAndSelectClientAppointment()">Создать и выбрать</button>
+            </div>
+        </div>
+    </div>
+
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         let currentDate = new Date();
