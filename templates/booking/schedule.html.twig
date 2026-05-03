@@ -586,29 +586,36 @@
         </div>
     </div>
 
-    <!-- Модальное окно для добавления записи -->
+    <!-- Модальное окно создания записи -->
     <div id="appointmentModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Новая запись</h3>
+                <h2>Новая запись</h2>
                 <button class="close-modal" onclick="closeModal('appointmentModal')">&times;</button>
             </div>
             <div class="modal-body">
                 <form id="appointmentForm">
-                    <div class="form-group">
-                        <label for="clientSelect">Клиент:</label>
-                        <select id="clientSelect" required>
-                            <option value="">Выберите клиента</option>
-                        </select>
+                    <!-- Поле выбора клиента с кастомным селектом -->
+                    <div class="form-group client-select-group">
+                        <label>Клиент <span class="required">*</span></label>
+                        <div class="custom-select" id="clientSelectField" onclick="openClientSelectionForAppointment()">
+                            <div class="custom-select-trigger">
+                                <span id="selectedClientDisplay">Выберите клиента</span>
+                                <span class="arrow">▼</span>
+                            </div>
+                            <input type="hidden" id="selectedClientIdInput">
+                        </div>
                     </div>
+
                     <div class="form-group">
-                        <label for="appointmentDate">Дата:</label>
+                        <label for="appointmentDate">Дата <span class="required">*</span></label>
                         <input type="date" id="appointmentDate" required>
                     </div>
+
                     <div class="form-group">
-                        <label for="appointmentTime">Время:</label>
+                        <label for="appointmentTime">Время <span class="required">*</span></label>
                         <select id="appointmentTime" required>
-                            <option value="07:00">07:00 - 12:00</option>
+                            <option value="07:00">07:00 - 10:00</option>
                             <option value="08:00">08:00 - 11:00</option>
                             <option value="09:00">09:00 - 12:00</option>
                             <option value="10:00">10:00 - 13:00</option>
@@ -621,14 +628,13 @@
                             <option value="17:00">17:00 - 20:00</option>
                             <option value="18:00">18:00 - 21:00</option>
                             <option value="19:00">19:00 - 22:00</option>
-                            <option value="20:00">20:00 - 23:00</option>
                         </select>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
                 <button class="btn-cancel" onclick="closeModal('appointmentModal')">Отмена</button>
-                <button class="btn-submit" onclick="createAppointment()">Создать</button>
+                <button class="btn-submit" onclick="createAppointmentFromModal()">Создать запись</button>
             </div>
         </div>
     </div>
@@ -664,6 +670,8 @@
                     window.location.href = '/clients';
                 } else if (page === 'schedule') {
                     window.location.href = '/schedule';
+                } else if (page === 'notifications') {
+                    window.location.href = '/notifications';
                 } else if (page === 'profile') {
                     window.location.href = '/profile';
                 }
@@ -811,27 +819,298 @@
         function showAppointmentModal() {
             const dateStr = selectedDate.toISOString().split('T')[0];
             $('#appointmentDate').val(dateStr);
+            // Сбрасываем выбранного клиента
+            resetSelectedClient();
             $('#appointmentModal').addClass('show');
+        }
+
+        // Сброс выбранного клиента
+        function resetSelectedClient() {
+            $('#selectedClientIdInput').val('');
+            $('#selectedClientDisplay').text('Выберите клиента').addClass('placeholder');
+
+            // Удаляем блок с информацией о клиенте, если есть
+            $('.selected-client-info').remove();
         }
 
         function closeModal(modalId) {
             $(`#${modalId}`).removeClass('show');
         }
 
-        function loadClients() {
+        // Открытие окна выбора клиента из формы создания записи
+        function openClientSelectionForAppointment() {
+            // Сохраняем callback для возврата
+            pendingClientSelectionCallback = function(clientId, clientName, clientPhone) {
+                selectClientForAppointmentForm(clientId, clientName, clientPhone);
+            };
+
+            // Загружаем список клиентов
+            loadClientsForSelection();
+
+            // Очищаем поле поиска
+            $('#clientSearchInput').val('');
+            $('#searchResults .no-results').hide();
+            $('#clearSearchBtn').hide();
+
+            // Показываем модальное окно выбора клиента
+            $('#clientSelectionModal').addClass('show');
+
+            // Фокусируемся на поле поиска
+            setTimeout(() => {
+                $('#clientSearchInput').focus();
+            }, 300);
+        }
+
+        // Выбор клиента для формы создания записи
+        function selectClientForAppointmentForm(clientId, clientName, clientPhone) {
+            // Сохраняем ID клиента
+            $('#selectedClientIdInput').val(clientId);
+
+            // Обновляем отображение
+            $('#selectedClientDisplay').text(clientName).removeClass('placeholder');
+
+            // Добавляем информацию о клиенте
+            const clientInfoHtml = `
+        <div class="selected-client-info">
+            <div>
+                <div class="selected-client-name">${escapeHtml(clientName)}</div>
+                <div class="selected-client-phone">${escapeHtml(clientPhone)}</div>
+            </div>
+            <button type="button" class="clear-client-btn" onclick="resetSelectedClient()">✕</button>
+        </div>
+    `;
+
+            // Удаляем старый блок и добавляем новый
+            $('.selected-client-info').remove();
+            $('#clientSelectField').after(clientInfoHtml);
+        }
+
+        // Создание записи из модального окна
+        function createAppointmentFromModal() {
+            const clientId = $('#selectedClientIdInput').val();
+            const date = $('#appointmentDate').val();
+            const time = $('#appointmentTime').val();
+
+            // Валидация
+            if (!clientId) {
+                alert('Пожалуйста, выберите клиента');
+                return;
+            }
+
+            if (!date) {
+                alert('Пожалуйста, выберите дату');
+                return;
+            }
+
+            if (!time) {
+                alert('Пожалуйста, выберите время');
+                return;
+            }
+
+            const $submitBtn = $('#appointmentModal .btn-submit');
+            const originalText = $submitBtn.text();
+            $submitBtn.text('Создание...').prop('disabled', true);
+
             $.ajax({
-                url: '/api/clients',
-                method: 'GET',
-                success: function(clients) {
-                    const $select = $('#clientSelect');
-                    $select.empty();
-                    $select.append('<option value="">Выберите клиента</option>');
-                    clients.forEach(client => {
-                        $select.append(`<option value="${client.id}">${client.name} - ${client.phone}</option>`);
-                    });
+                url: '/api/appointments',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    client_id: clientId,
+                    date: date,
+                    start_time: time
+                }),
+                success: function(response) {
+                    if (response.success) {
+                        closeModal('appointmentModal');
+
+                        // Обновляем расписание
+                        const selectedDateObj = new Date(date);
+                        loadAppointments(selectedDateObj);
+
+                        // Показываем уведомление
+                        showNotification('Запись успешно создана', 'success');
+
+                        // Сбрасываем форму
+                        resetSelectedClient();
+                    } else {
+                        alert('Ошибка: ' + (response.error || 'Неизвестная ошибка'));
+                    }
+                },
+                error: function(xhr) {
+                    let errorMsg = 'Не удалось создать запись';
+                    if (xhr.responseJSON && xhr.responseJSON.error) {
+                        errorMsg = xhr.responseJSON.error;
+                    }
+                    alert('Ошибка: ' + errorMsg);
+                },
+                complete: function() {
+                    $submitBtn.text(originalText).prop('disabled', false);
                 }
             });
         }
+
+        // Обработка выбора клиента (возврат в форму)
+        function handleClientSelection(clientId, clientName, clientPhone) {
+            // Закрываем окно выбора клиента
+            closeModal('clientSelectionModal');
+
+            // Если есть callback, вызываем его
+            if (pendingClientSelectionCallback) {
+                pendingClientSelectionCallback(clientId, clientName, clientPhone);
+                pendingClientSelectionCallback = null;
+            }
+        }
+
+        // Поиск клиентов
+        function searchClients(query) {
+            if (query.length < 2) {
+                loadClientsForSelection();
+                return;
+            }
+
+            $('#searchResults .search-loading').show();
+            $('#clientsListModal').hide();
+
+            $.ajax({
+                url: `/api/clients/search?q=${encodeURIComponent(query)}`,
+                method: 'GET',
+                success: function(clients) {
+                    $('#searchResults .search-loading').hide();
+
+                    if (clients.length === 0) {
+                        $('#clientsListModal').hide();
+                        $('#searchResults .no-results').show();
+                        $('#createFromSearchBtn').show();
+                    } else {
+                        $('#searchResults .no-results').hide();
+                        displayClientResults(clients);
+                        $('#clientsListModal').show();
+                    }
+                },
+                error: function() {
+                    $('#searchResults .search-loading').hide();
+                    $('#clientsListModal').html('<div class="no-results"><p>Ошибка поиска</p></div>').show();
+                }
+            });
+        }
+
+        // Отображение результатов клиентов
+        function displayClientResults(clients) {
+            const $container = $('#clientsListModal');
+
+            if (!clients || clients.length === 0) {
+                $container.html(`
+            <div class="no-results">
+                <span class="no-results-icon">👤</span>
+                <p>Нет клиентов</p>
+                <button class="create-from-search-btn" onclick="openCreateClientFromSelection()">Создать клиента</button>
+            </div>
+        `);
+                return;
+            }
+
+            let html = '';
+            clients.forEach(client => {
+                html += `
+            <div class="client-result-item" data-client-id="${client.id}">
+                <div class="client-result-info">
+                    <div class="client-result-name">${escapeHtml(client.name)}</div>
+                    <div class="client-result-phone">${escapeHtml(client.phone)}</div>
+                </div>
+                <button class="select-client-btn" onclick="handleClientSelection(${client.id}, '${escapeHtml(client.name)}', '${escapeHtml(client.phone)}')">
+                    Выбрать
+                </button>
+            </div>
+        `;
+            });
+
+            $container.html(html);
+        }
+
+        // Открыть создание клиента из окна выбора
+        function openCreateClientFromSelection() {
+            const searchTerm = $('#clientSearchInput').val();
+
+            if (searchTerm && searchTerm.length > 0) {
+                if (searchTerm.includes('@')) {
+                    $('#newClientEmail').val(searchTerm);
+                } else if (searchTerm.match(/[\d\+]/)) {
+                    $('#newClientPhone').val(searchTerm);
+                } else {
+                    $('#newClientName').val(searchTerm);
+                }
+            }
+
+            $('#createClientModal').addClass('show');
+        }
+
+        // Создание клиента и выбор его для записи
+        function createAndSelectClientAppointment() {
+            const name = $('#newClientName').val().trim();
+            const phone = $('#newClientPhone').val().trim();
+
+            if (!name || !phone) {
+                alert('Заполните имя и телефон');
+                return;
+            }
+
+            $.ajax({
+                url: '/api/clients',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ name: name, phone: phone }),
+                success: function(response) {
+                    if (response.success) {
+                        // Закрываем окно создания
+                        closeModal('createClientModal');
+                        closeModal('clientSelectionModal');
+
+                        // Очищаем форму
+                        $('#newClientName').val('');
+                        $('#newClientPhone').val('');
+
+                        // Обновляем поле выбора клиента в форме
+                        $('#selectedClientIdInput').val(response.id);
+                        $('#selectedClientDisplay').text(name).removeClass('placeholder');
+
+                        // Добавляем информацию
+                        $('.selected-client-info').remove();
+                        $('#clientSelectField').after(`
+                            <div class="selected-client-info">
+                                <div>
+                                    <div class="selected-client-name">${escapeHtml(name)}</div>
+                                    <div class="selected-client-phone">${escapeHtml(phone)}</div>
+                                </div>
+                                <button type="button" class="clear-client-btn" onclick="resetSelectedClient()">✕</button>
+                            </div>
+                        `);
+
+                        // Показываем уведомление
+                        showNotification('Клиент создан и выбран', 'success');
+                    }
+                },
+                error: function(xhr) {
+                    alert('Ошибка: ' + (xhr.responseJSON?.error || 'Неизвестная ошибка'));
+                }
+            });
+        }
+
+
+        // function loadClients() {
+        //     $.ajax({
+        //         url: '/api/clients',
+        //         method: 'GET',
+        //         success: function(clients) {
+        //             const $select = $('#clientSelect');
+        //             $select.empty();
+        //             $select.append('<option value="">Выберите клиента</option>');
+        //             clients.forEach(client => {
+        //                 $select.append(`<option value="${client.id}">${client.name} - ${client.phone}</option>`);
+        //             });
+        //         }
+        //     });
+        // }
 
         function loadAppointments() {
             $.ajax({
