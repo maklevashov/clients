@@ -1097,20 +1097,20 @@
         }
 
 
-        // function loadClients() {
-        //     $.ajax({
-        //         url: '/api/clients',
-        //         method: 'GET',
-        //         success: function(clients) {
-        //             const $select = $('#clientSelect');
-        //             $select.empty();
-        //             $select.append('<option value="">Выберите клиента</option>');
-        //             clients.forEach(client => {
-        //                 $select.append(`<option value="${client.id}">${client.name} - ${client.phone}</option>`);
-        //             });
-        //         }
-        //     });
-        // }
+        function loadClients() {
+            $.ajax({
+                url: '/api/clients',
+                method: 'GET',
+                success: function(clients) {
+                    const $select = $('#clientSelect');
+                    $select.empty();
+                    $select.append('<option value="">Выберите клиента</option>');
+                    clients.forEach(client => {
+                        $select.append(`<option value="${client.id}">${client.name} - ${client.phone}</option>`);
+                    });
+                }
+            });
+        }
 
         function loadAppointments() {
             $.ajax({
