@@ -950,6 +950,20 @@
             });
         }
 
+        // Функция загрузки клиентов для выбора
+        function loadClientsForSelection() {
+            $.ajax({
+                url: '/api/clients',
+                method: 'GET',
+                success: function(clients) {
+                    displayClientResults(clients);
+                },
+                error: function() {
+                    $('#clientsListModal').html('<div class="no-results"><p>Ошибка загрузки клиентов</p></div>');
+                }
+            });
+        }
+
         // Обработка выбора клиента (возврат в форму)
         function handleClientSelection(clientId, clientName, clientPhone) {
             // Закрываем окно выбора клиента
