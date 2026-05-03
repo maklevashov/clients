@@ -1587,12 +1587,14 @@
                 new SwipeHandler(weekCalendar, {
                     onSwipeLeft: () => {
                         // Свайп влево - следующая неделя
+                        e.preventDefault();
                         currentWeekOffset++;
                         updateWeekCalendar();
                         animateCalendarSlide('left');
                     },
                     onSwipeRight: () => {
                         // Свайп вправо - предыдущая неделя
+                        e.preventDefault();
                         currentWeekOffset--;
                         updateWeekCalendar();
                         animateCalendarSlide('right');
