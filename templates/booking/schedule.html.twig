@@ -153,7 +153,7 @@
             position: absolute;
             top: 4px;
             right: 4px;
-            background: #FF3B30;
+            /*background: #FF3B30; */
             color: white;
             font-size: 10px;
             font-weight: bold;
@@ -162,6 +162,10 @@
             min-width: 18px;
             text-align: center;
         }
+
+        .appointments-count.low { background: #34C759; }
+        .appointments-count.medium { background: #FF9500; }
+        .appointments-count.high { background: #FF3B30; }
 
         .calendar-day-cell.today .appointments-count {
             background: rgba(255,255,255,0.3);
@@ -1122,7 +1126,7 @@
                      data-month="${currentMonth}"
                      data-day="${i}">
                     <div class="day-number">${i}</div>
-                    ${capacity.bookedCount > 0 ? `<div class="appointments-count">${capacity.bookedCount}</div>` : ''}
+                    ${capacity.bookedCount > 0 ? `<div class="appointments-count ${capacity.bookedCount}">${capacity.bookedCount}</div>` : ''}
                     <div class="capacity-indicator">
                         <div class="capacity-fill ${capacity.class}" style="width: ${Math.min(capacity.percentage, 100)}%"></div>
                     </div>
