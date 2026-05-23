@@ -162,4 +162,56 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->isActive = $isActive;
         return $this;
     }
+
+    #[ORM\ManyToOne(targetEntity: Organization::class, inversedBy: 'users')]
+    #[ORM\JoinColumn(name: 'organization_id', referencedColumnName: 'id', nullable: true)]
+    private ?Organization $organization = null;
+
+    #[ORM\Column(length: 50, nullable: true)]
+    private ?string $position = null; // Должность (администратор, мастер и т.д.)
+
+    #[ORM\Column(type: 'json', nullable: true)]
+    private ?array $permissions = [];
+
+
+    public function getOrganization(): ?Organization
+    {
+        return $this->organization;
+    }
+
+    public function setOrganization(?Organization $organization): static
+    {
+        $this->organization = $organization;
+        return $this;
+    }
+
+    public function getPosition(): ?string
+    {
+        return $this->position;
+    }
+
+    public function setPosition(?string $position): static
+    {
+        $this->position = $position;
+        return $this;
+    }
+
+    public function getPermissions(): ?array
+    {
+        return $this->permissions;
+    }
+
+    public function setPermissions(?array $permissions): static
+    {
+        $this->permissions = $permissions;
+        return $this;
+    }
+
+    public function hasPermission(string $permission): bool
+    {
+        if (in_array('ROLE_ADMIN', $this->getRoles())) {
+            return true;
+        }
+        return $this->permissions && in_array($permission, $this->permissions);
+    }
 }

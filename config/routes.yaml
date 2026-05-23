@@ -161,6 +161,14 @@ api_user_change_password:
     controller: App\Controller\BookingController::changePassword
     methods: ['POST']
 
+app_organization_setup:
+    path: /setup/organization
+    controller: App\Controller\OrganizationController::setup
+
+app_organization_select:
+    path: /select/organization
+    controller: App\Controller\OrganizationController::select
+
 
     ##todo переделать на jwt (возможно не надо????)
 

@@ -15,33 +15,35 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 class BookingController extends AbstractController
 {
     #[Route('/', name: 'app_booking')]
-    #[Route('/booking', name: 'app_booking_alt')]
     public function index(EntityManagerInterface $entityManager): Response
     {
-        // Проверка авторизации
-        if (!$this->getUser()) {
-            return $this->redirectToRoute('app_login');
-        }
-
         $user = $this->getUser();
+        $organization = $this->getOrganization();
+
+        if (!$organization) {
+            return $this->redirectToRoute('app_organization_setup');
+        }
 
         $appointments = $entityManager->getRepository(Appointment::class)
             ->createQueryBuilder('a')
             ->select('a', 'c')
             ->leftJoin('a.client', 'c')
             ->where('a.appointmentDate = :today')
+            ->andWhere('a.organization = :organization')
             ->setParameter('today', new \DateTime('today'))
+            ->setParameter('organization', $organization)
             ->orderBy('a.startTime', 'ASC')
             ->getQuery()
             ->getResult();
 
         $clients = $entityManager->getRepository(Client::class)
-            ->findBy([], ['name' => 'ASC']);
+            ->findBy(['organization' => $organization], ['name' => 'ASC']);
 
         return $this->render('booking/index.html.twig', [
             'appointments' => $appointments,
             'clients' => $clients,
-            'current_date' => new \DateTime()
+            'current_date' => new \DateTime(),
+            'organization' => $organization
         ]);
     }
 
@@ -112,11 +114,12 @@ class BookingController extends AbstractController
     #[Route('/api/appointments', name: 'api_appointments', methods: ['GET'])]
     public function getAppointments(Request $request, EntityManagerInterface $entityManager): JsonResponse
     {
-        if (!$this->getUser()) {
-            return $this->json(['error' => 'Unauthorized'], 401);
+        $organization = $this->getOrganization();
+
+        if (!$organization) {
+            return $this->json(['error' => 'Organization not found'], 400);
         }
 
-        $user = $this->getUser();
         $date = $request->query->get('date') ? new \DateTime($request->query->get('date')) : new \DateTime();
 
         $appointments = $entityManager->getRepository(Appointment::class)
@@ -124,9 +127,9 @@ class BookingController extends AbstractController
             ->select('a.id', 'a.appointmentDate', 'a.startTime', 'a.endTime', 'c.id as client_id', 'c.name', 'c.phone')
             ->leftJoin('a.client', 'c')
             ->where('a.appointmentDate = :date')
-            ->andWhere('a.user = :user')
+            ->andWhere('a.organization = :organization')
             ->setParameter('date', $date)
-            ->setParameter('user', $user)
+            ->setParameter('organization', $organization)
             ->orderBy('a.startTime', 'ASC')
             ->getQuery()
             ->getResult();
@@ -150,16 +153,18 @@ class BookingController extends AbstractController
     #[Route('/api/appointments', name: 'api_create_appointment', methods: ['POST'])]
     public function createAppointment(Request $request, EntityManagerInterface $entityManager): JsonResponse
     {
-        if (!$this->getUser()) {
-            return $this->json(['error' => 'Unauthorized'], 401);
+        $user = $this->getUser();
+        $organization = $this->getOrganization();
+
+        if (!$organization) {
+            return $this->json(['error' => 'Organization not found'], 400);
         }
 
-        $user = $this->getUser();
         $data = json_decode($request->getContent(), true);
 
         try {
             $client = $entityManager->getRepository(Client::class)
-                ->findOneBy(['id' => $data['client_id'], 'user' => $user]);
+                ->findOneBy(['id' => $data['client_id'], 'organization' => $organization]);
 
             if (!$client) {
                 return $this->json(['error' => 'Клиент не найден'], 404);
@@ -171,6 +176,7 @@ class BookingController extends AbstractController
             $appointment = new Appointment();
             $appointment->setClient($client);
             $appointment->setUser($user);
+            $appointment->setOrganization($organization);
             $appointment->setAppointmentDate(new \DateTime($data['date']));
             $appointment->setStartTime($startTime);
             $appointment->setEndTime($endTime);
@@ -208,13 +214,14 @@ class BookingController extends AbstractController
     #[Route('/api/clients', name: 'api_clients', methods: ['GET'])]
     public function getClients(EntityManagerInterface $entityManager): JsonResponse
     {
-        if (!$this->getUser()) {
-            return $this->json(['error' => 'Unauthorized'], 401);
+        $organization = $this->getOrganization();
+
+        if (!$organization) {
+            return $this->json(['error' => 'Organization not found'], 400);
         }
 
-        $user = $this->getUser();
         $clients = $entityManager->getRepository(Client::class)
-            ->findBy(['user' => $user], ['name' => 'ASC']);
+            ->findBy(['organization' => $organization], ['name' => 'ASC']);
 
         $data = [];
         foreach ($clients as $client) {
@@ -231,11 +238,13 @@ class BookingController extends AbstractController
     #[Route('/api/clients', name: 'api_create_client', methods: ['POST'])]
     public function createClient(Request $request, EntityManagerInterface $entityManager): JsonResponse
     {
-        if (!$this->getUser()) {
-            return $this->json(['error' => 'Unauthorized'], 401);
+        $user = $this->getUser();
+        $organization = $this->getOrganization();
+
+        if (!$organization) {
+            return $this->json(['error' => 'Organization not found'], 400);
         }
 
-        $user = $this->getUser();
         $data = json_decode($request->getContent(), true);
 
         try {
@@ -243,6 +252,19 @@ class BookingController extends AbstractController
             $client->setName($data['name']);
             $client->setPhone($data['phone']);
             $client->setUser($user);
+            $client->setOrganization($organization);
+
+            if (isset($data['email'])) {
+                $metadata = $client->getMetadata() ?? [];
+                $metadata['email'] = $data['email'];
+                $client->setMetadata($metadata);
+            }
+
+            if (isset($data['note'])) {
+                $metadata = $client->getMetadata() ?? [];
+                $metadata['note'] = $data['note'];
+                $client->setMetadata($metadata);
+            }
 
             $entityManager->persist($client);
             $entityManager->flush();
@@ -709,5 +731,156 @@ class BookingController extends AbstractController
         $entityManager->flush();
 
         return $this->json(['success' => true]);
+    }
+
+    private function getOrganization(): ?Organization
+    {
+        $user = $this->getUser();
+        return $user ? $user->getOrganization() : null;
+    }
+
+
+    #[Route('/api/appointments/{id}/status', name: 'api_update_appointment_status', methods: ['PUT'])]
+    public function updateAppointmentStatus(int $id, Request $request, EntityManagerInterface $entityManager): JsonResponse
+    {
+        $appointment = $entityManager->getRepository(Appointment::class)->find($id);
+
+        if (!$appointment) {
+            return $this->json(['error' => 'Appointment not found'], 404);
+        }
+
+        $data = json_decode($request->getContent(), true);
+        $appointment->setStatus($data['status']);
+
+        $entityManager->flush();
+
+        return $this->json(['success' => true]);
+    }
+
+    #[Route('/api/appointments/{id}/note', name: 'api_update_appointment_note', methods: ['PUT'])]
+    public function updateAppointmentNote(int $id, Request $request, EntityManagerInterface $entityManager): JsonResponse
+    {
+        $appointment = $entityManager->getRepository(Appointment::class)->find($id);
+
+        if (!$appointment) {
+            return $this->json(['error' => 'Appointment not found'], 404);
+        }
+
+        $data = json_decode($request->getContent(), true);
+        $appointment->setComment($data['comment']);
+
+        $entityManager->flush();
+
+        return $this->json(['success' => true]);
+    }
+
+    #[Route('/api/appointments/{id}/services', name: 'api_add_service', methods: ['POST'])]
+    public function addService(int $id, Request $request, EntityManagerInterface $entityManager): JsonResponse
+    {
+        $appointment = $entityManager->getRepository(Appointment::class)->find($id);
+
+        if (!$appointment) {
+            return $this->json(['error' => 'Appointment not found'], 404);
+        }
+
+        $data = json_decode($request->getContent(), true);
+        $appointment->addService([
+            'name' => $data['name'],
+            'price' => $data['price']
+        ]);
+
+        $entityManager->flush();
+
+        return $this->json(['success' => true]);
+    }
+
+    #[Route('/api/appointments/{id}/services/{index}', name: 'api_remove_service', methods: ['DELETE'])]
+    public function removeService(int $id, int $index, EntityManagerInterface $entityManager): JsonResponse
+    {
+        $appointment = $entityManager->getRepository(Appointment::class)->find($id);
+
+        if (!$appointment) {
+            return $this->json(['error' => 'Appointment not found'], 404);
+        }
+
+        $appointment->removeService($index);
+        $entityManager->flush();
+
+        return $this->json(['success' => true]);
+    }
+
+    #[Route('/api/appointments/{id}/products', name: 'api_add_product', methods: ['POST'])]
+    public function addProduct(int $id, Request $request, EntityManagerInterface $entityManager): JsonResponse
+    {
+        $appointment = $entityManager->getRepository(Appointment::class)->find($id);
+
+        if (!$appointment) {
+            return $this->json(['error' => 'Appointment not found'], 404);
+        }
+
+        $data = json_decode($request->getContent(), true);
+        $appointment->addProduct([
+            'name' => $data['name'],
+            'price' => $data['price'],
+            'quantity' => $data['quantity']
+        ]);
+
+        $entityManager->flush();
+
+        return $this->json(['success' => true]);
+    }
+
+    #[Route('/api/appointments/{id}/products/{index}', name: 'api_remove_product', methods: ['DELETE'])]
+    public function removeProduct(int $id, int $index, EntityManagerInterface $entityManager): JsonResponse
+    {
+        $appointment = $entityManager->getRepository(Appointment::class)->find($id);
+
+        if (!$appointment) {
+            return $this->json(['error' => 'Appointment not found'], 404);
+        }
+
+        $appointment->removeProduct($index);
+        $entityManager->flush();
+
+        return $this->json(['success' => true]);
+    }
+
+    #[Route('/api/clients/{id}/history', name: 'api_client_history', methods: ['GET'])]
+    public function getClientHistory(int $id, EntityManagerInterface $entityManager): JsonResponse
+    {
+        $client = $entityManager->getRepository(Client::class)->find($id);
+
+        if (!$client) {
+            return $this->json(['error' => 'Client not found'], 404);
+        }
+
+        $appointments = $entityManager->getRepository(Appointment::class)
+            ->createQueryBuilder('a')
+            ->select('a', 'u')
+            ->leftJoin('a.user', 'u')
+            ->where('a.client = :client')
+            ->andWhere('a.appointmentDate < :today')
+            ->setParameter('client', $client)
+            ->setParameter('today', new \DateTime())
+            ->orderBy('a.appointmentDate', 'DESC')
+            ->addOrderBy('a.startTime', 'DESC')
+            ->getQuery()
+            ->getResult();
+
+        $history = [];
+        foreach ($appointments as $appointment) {
+            $history[] = [
+                'id' => $appointment->getId(),
+                'date' => $appointment->getAppointmentDate()->format('d.m.Y'),
+                'startTime' => $appointment->getStartTime()->format('H:i'),
+                'endTime' => $appointment->getEndTime()->format('H:i'),
+                'masterName' => $appointment->getUser()->getName(),
+                'comment' => $appointment->getComment(),
+                'services' => $appointment->getServices(),
+                'totalPrice' => $appointment->getTotalPrice()
+            ];
+        }
+
+        return $this->json($history);
     }
 }

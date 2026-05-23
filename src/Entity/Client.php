@@ -123,4 +123,20 @@ class Client
         $this->user = $user;
         return $this;
     }
+
+    #[ORM\ManyToOne(targetEntity: Organization::class, inversedBy: 'clients')]
+    #[ORM\JoinColumn(name: 'organization_id', referencedColumnName: 'id', nullable: false)]
+    private ?Organization $organization = null;
+
+
+    public function getOrganization(): ?Organization
+    {
+        return $this->organization;
+    }
+
+    public function setOrganization(?Organization $organization): static
+    {
+        $this->organization = $organization;
+        return $this;
+    }
 }
