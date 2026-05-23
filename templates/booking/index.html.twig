@@ -1888,5 +1888,495 @@
         window.prevWeek = prevWeek;
         window.goToCurrentWeek = goToCurrentWeek;
         window.selectDate = selectDate;
+
+
+        // В функции updateScheduleDisplay обновить создание карточек
+        function updateScheduleDisplay(appointments) {
+            $('.booking-card').remove();
+
+            if (!appointments || appointments.length === 0) {
+                return;
+            }
+
+            appointments.forEach(function(appointment) {
+                const hour = parseInt(appointment.start_time.split(':')[0]);
+                const topPosition = (hour - 8) * 40;
+
+                const card = `
+            <div class="booking-card" data-appointment-id="${appointment.id}"
+                 data-client-id="${appointment.client_id}"
+                 style="top: ${topPosition}px;">
+                <div class="booking-time">${appointment.start_time}-${appointment.end_time}</div>
+                <div class="booking-client">${escapeHtml(appointment.client_name)}</div>
+                <div class="booking-phone">${escapeHtml(appointment.client_phone)}</div>
+                <button class="delete-booking" onclick="event.stopPropagation(); deleteAppointment(${appointment.id})">×</button>
+            </div>
+        `;
+
+                $('.current-bookings').append(card);
+            });
+
+            // Добавляем обработчик клика на карточку
+            $('.booking-card').click(function(e) {
+                // Если клик не по кнопке удаления
+                if (!$(e.target).hasClass('delete-booking')) {
+                    const appointmentId = $(this).data('appointment-id');
+                    const clientId = $(this).data('client-id');
+                    openAppointmentCard(appointmentId, clientId);
+                }
+            });
+        }
+
+        // Функция открытия карточки записи
+        function openAppointmentCard(appointmentId, clientId) {
+            // Сохраняем ID записи в глобальную переменную
+            window.currentAppointmentId = appointmentId;
+            window.currentClientId = clientId;
+
+            // Загружаем данные записи
+            $.ajax({
+                url: `/api/appointments/${appointmentId}`,
+                method: 'GET',
+                success: function(data) {
+                    // Показываем карточку клиента с данными записи
+                    showAppointmentCardModal(data);
+                },
+                error: function() {
+                    showNotification('Ошибка загрузки данных записи', 'error');
+                }
+            });
+        }
+
+        // Функция показа модального окна карточки записи
+        function showAppointmentCardModal(appointmentData) {
+            // Создаем HTML для модального окна
+            const modalHtml = `
+        <div id="appointmentCardModal" class="modal show">
+            <div class="modal-content appointment-card-modal">
+                <div class="modal-header">
+                    <h2>Карточка записи</h2>
+                    <button class="close-modal" onclick="closeModal('appointmentCardModal')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <!-- Информация о клиенте -->
+                    <div class="client-info-section">
+                        <div class="client-name-large">${escapeHtml(appointmentData.client.name)}</div>
+                        <div class="client-phone-large">${escapeHtml(appointmentData.client.phone)}</div>
+                    </div>
+
+                    <!-- Статус бар -->
+                    <div class="status-buttons">
+                        <button class="status-btn waiting ${appointmentData.status === 'waiting' ? 'active' : ''}" onclick="updateAppointmentStatus(${appointmentData.id}, 'waiting')">
+                            ⏳ Ожидание
+                        </button>
+                        <button class="status-btn confirmed ${appointmentData.status === 'confirmed' ? 'active' : ''}" onclick="updateAppointmentStatus(${appointmentData.id}, 'confirmed')">
+                            ✅ Подтвердил
+                        </button>
+                        <button class="status-btn came ${appointmentData.status === 'came' ? 'active' : ''}" onclick="updateAppointmentStatus(${appointmentData.id}, 'came')">
+                            📍 Пришёл
+                        </button>
+                        <button class="status-btn not-came ${appointmentData.status === 'not_came' ? 'active' : ''}" onclick="updateAppointmentStatus(${appointmentData.id}, 'not_came')">
+                            ❌ Не пришёл
+                        </button>
+                    </div>
+
+                    <!-- Действия -->
+                    <div class="actions-section">
+                        <div class="actions-title">Действия</div>
+                        <div class="action-buttons">
+                            <button class="action-btn call" onclick="makeCall('${escapeHtml(appointmentData.client.phone)}')">
+                                <span>📞</span> Позвонить
+                            </button>
+                            <button class="action-btn message" onclick="sendMessage('${escapeHtml(appointmentData.client.phone)}')">
+                                <span>💬</span> Написать
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Статистика -->
+                    <div class="stats-section">
+                        <div class="stat-item">
+                            <div class="stat-value">${appointmentData.client.totalVisits || 0}</div>
+                            <div class="stat-label">Визитов</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">${appointmentData.client.noShows || 0}</div>
+                            <div class="stat-label">Неявок</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">${appointmentData.totalPrice || 0} ₽</div>
+                            <div class="stat-label">Сумма</div>
+                        </div>
+                    </div>
+
+                    <!-- Дата и время -->
+                    <div class="info-section">
+                        <div class="info-row">
+                            <span class="info-label">📅 Дата:</span>
+                            <span class="info-value">${appointmentData.date}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">⏰ Время:</span>
+                            <span class="info-value">${appointmentData.start_time} - ${appointmentData.end_time}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">👤 Мастер:</span>
+                            <span class="info-value">${escapeHtml(appointmentData.masterName)}</span>
+                        </div>
+                    </div>
+
+                    <!-- Примечание -->
+                    <div class="note-section">
+                        <div class="note-header">
+                            <div class="note-title">📝 Примечание</div>
+                            <button class="edit-note" onclick="editAppointmentNote(${appointmentData.id})">✎</button>
+                        </div>
+                        <div class="note-content ${appointmentData.notes ? '' : 'empty'}" id="appointmentNoteContent">
+                            ${appointmentData.notes || 'Добавить примечание'}
+                        </div>
+                    </div>
+
+                    <!-- Услуги -->
+                    <div class="services-section">
+                        <div class="services-header">
+                            <div class="services-title">💇 Услуги</div>
+                            <button class="add-item-btn" onclick="addServiceToAppointment(${appointmentData.id})">+</button>
+                        </div>
+                        <div id="appointmentServicesList">
+                            ${renderServicesList(appointmentData.services)}
+                        </div>
+                    </div>
+
+                    <!-- Товары -->
+                    <div class="products-section">
+                        <div class="products-header">
+                            <div class="products-title">🛍 Товары и абонементы</div>
+                            <button class="add-item-btn" onclick="addProductToAppointment(${appointmentData.id})">+</button>
+                        </div>
+                        <div id="appointmentProductsList">
+                            ${renderProductsList(appointmentData.products)}
+                        </div>
+                    </div>
+
+                    <!-- Итого -->
+                    <div class="total-section">
+                        <div class="total-label">К оплате</div>
+                        <div class="total-price" id="appointmentTotalPrice">${appointmentData.totalPrice || 0} ₽</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-cancel" onclick="closeModal('appointmentCardModal')">Закрыть</button>
+                    <button class="btn-submit" onclick="saveAppointmentChanges(${appointmentData.id})">Сохранить</button>
+                </div>
+            </div>
+        </div>
+    `;
+
+            // Удаляем старую модалку, если есть
+            $('#appointmentCardModal').remove();
+            $('body').append(modalHtml);
+
+            // Добавляем стили для модального окна
+            addModalStyles();
+        }
+
+        // Функция рендера списка услуг
+        function renderServicesList(services) {
+            if (!services || services.length === 0) {
+                return '<div class="empty-item">Нет услуг</div>';
+            }
+
+            let html = '';
+            services.forEach((service, index) => {
+                html += `
+            <div class="service-item" data-index="${index}">
+                <div class="service-info">
+                    <div class="service-name">${escapeHtml(service.name)}</div>
+                </div>
+                <div class="service-price">${service.price} ₽</div>
+                <button class="remove-item" onclick="removeAppointmentService(${index})">✕</button>
+            </div>
+        `;
+            });
+            return html;
+        }
+
+        // Функция рендера списка товаров
+        function renderProductsList(products) {
+            if (!products || products.length === 0) {
+                return '<div class="empty-item">Нет товаров</div>';
+            }
+
+            let html = '';
+            products.forEach((product, index) => {
+                html += `
+            <div class="service-item" data-index="${index}">
+                <div class="service-info">
+                    <div class="service-name">${escapeHtml(product.name)} x${product.quantity}</div>
+                </div>
+                <div class="service-price">${product.price * product.quantity} ₽</div>
+                <button class="remove-item" onclick="removeAppointmentProduct(${index})">✕</button>
+            </div>
+        `;
+            });
+            return html;
+        }
+
+        // Обновление статуса записи
+        function updateAppointmentStatus(appointmentId, status) {
+            $.ajax({
+                url: `/api/appointments/${appointmentId}/status`,
+                method: 'PUT',
+                contentType: 'application/json',
+                data: JSON.stringify({ status: status }),
+                success: function() {
+                    showNotification('Статус обновлен', 'success');
+                    // Обновляем активные кнопки
+                    $('.status-btn').removeClass('active');
+                    $(`.status-btn.${status}`).addClass('active');
+
+                    // Обновляем расписание
+                    if (window.selectedDate) {
+                        loadAppointments(window.selectedDate);
+                    }
+                },
+                error: function() {
+                    showNotification('Ошибка обновления статуса', 'error');
+                }
+            });
+        }
+
+        // Редактирование примечания
+        function editAppointmentNote(appointmentId) {
+            const currentNote = $('#appointmentNoteContent').text();
+            const newNote = prompt('Введите примечание:', currentNote === 'Добавить примечание' ? '' : currentNote);
+
+            if (newNote !== null) {
+                $.ajax({
+                    url: `/api/appointments/${appointmentId}/note`,
+                    method: 'PUT',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ notes: newNote }),
+                    success: function() {
+                        $('#appointmentNoteContent').text(newNote || 'Добавить примечание');
+                        if (!newNote) {
+                            $('#appointmentNoteContent').addClass('empty');
+                        } else {
+                            $('#appointmentNoteContent').removeClass('empty');
+                        }
+                        showNotification('Примечание сохранено', 'success');
+                    },
+                    error: function() {
+                        showNotification('Ошибка сохранения примечания', 'error');
+                    }
+                });
+            }
+        }
+
+        // Добавление услуги
+        function addServiceToAppointment(appointmentId) {
+            const name = prompt('Введите название услуги:');
+            if (!name) return;
+
+            const price = prompt('Введите стоимость услуги:');
+            if (!price) return;
+
+            $.ajax({
+                url: `/api/appointments/${appointmentId}/services`,
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ name: name, price: parseFloat(price) }),
+                success: function() {
+                    refreshAppointmentCard(appointmentId);
+                    showNotification('Услуга добавлена', 'success');
+                },
+                error: function() {
+                    showNotification('Ошибка добавления услуги', 'error');
+                }
+            });
+        }
+
+        // Добавление товара
+        function addProductToAppointment(appointmentId) {
+            const name = prompt('Введите название товара:');
+            if (!name) return;
+
+            const price = prompt('Введите стоимость товара:');
+            if (!price) return;
+
+            const quantity = prompt('Введите количество:', '1');
+            if (!quantity) return;
+
+            $.ajax({
+                url: `/api/appointments/${appointmentId}/products`,
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    name: name,
+                    price: parseFloat(price),
+                    quantity: parseInt(quantity)
+                }),
+                success: function() {
+                    refreshAppointmentCard(appointmentId);
+                    showNotification('Товар добавлен', 'success');
+                },
+                error: function() {
+                    showNotification('Ошибка добавления товара', 'error');
+                }
+            });
+        }
+
+        // Удаление услуги
+        function removeAppointmentService(index) {
+            if (confirm('Удалить услугу?')) {
+                const appointmentId = window.currentAppointmentId;
+                $.ajax({
+                    url: `/api/appointments/${appointmentId}/services/${index}`,
+                    method: 'DELETE',
+                    success: function() {
+                        refreshAppointmentCard(appointmentId);
+                        showNotification('Услуга удалена', 'success');
+                    },
+                    error: function() {
+                        showNotification('Ошибка удаления услуги', 'error');
+                    }
+                });
+            }
+        }
+
+        // Удаление товара
+        function removeAppointmentProduct(index) {
+            if (confirm('Удалить товар?')) {
+                const appointmentId = window.currentAppointmentId;
+                $.ajax({
+                    url: `/api/appointments/${appointmentId}/products/${index}`,
+                    method: 'DELETE',
+                    success: function() {
+                        refreshAppointmentCard(appointmentId);
+                        showNotification('Товар удален', 'success');
+                    },
+                    error: function() {
+                        showNotification('Ошибка удаления товара', 'error');
+                    }
+                });
+            }
+        }
+
+        // Обновление карточки записи
+        function refreshAppointmentCard(appointmentId) {
+            $.ajax({
+                url: `/api/appointments/${appointmentId}`,
+                method: 'GET',
+                success: function(data) {
+                    // Обновляем отображение услуг
+                    $('#appointmentServicesList').html(renderServicesList(data.services));
+                    // Обновляем отображение товаров
+                    $('#appointmentProductsList').html(renderProductsList(data.products));
+                    // Обновляем итоговую сумму
+                    $('#appointmentTotalPrice').text((data.totalPrice || 0) + ' ₽');
+                    // Обновляем статистику
+                    $('.stat-item:first .stat-value').text(data.client.totalVisits || 0);
+                    $('.stat-item:eq(1) .stat-value').text(data.client.noShows || 0);
+                    $('.stat-item:last .stat-value').text(data.totalPrice || 0);
+
+                    // Обновляем расписание
+                    if (window.selectedDate) {
+                        loadAppointments(window.selectedDate);
+                    }
+                }
+            });
+        }
+
+        // Сохранение изменений
+        function saveAppointmentChanges(appointmentId) {
+            closeModal('appointmentCardModal');
+            showNotification('Изменения сохранены', 'success');
+        }
+
+        // Добавление стилей для модального окна
+        function addModalStyles() {
+            if ($('#appointment-card-styles').length) return;
+
+            const styles = `
+        <style id="appointment-card-styles">
+            .appointment-card-modal .modal-content {
+                max-height: 90vh;
+                overflow-y: auto;
+            }
+            .client-name-large {
+                font-size: 20px;
+                font-weight: 600;
+                color: #333;
+                margin-bottom: 5px;
+            }
+            .client-phone-large {
+                font-size: 14px;
+                color: #666;
+                margin-bottom: 15px;
+            }
+            .status-buttons {
+                display: flex;
+                gap: 8px;
+                margin-bottom: 20px;
+                flex-wrap: wrap;
+            }
+            .status-btn {
+                flex: 1;
+                padding: 8px 12px;
+                border: none;
+                border-radius: 20px;
+                font-size: 12px;
+                font-weight: 500;
+                cursor: pointer;
+                background: #f0f0f0;
+                color: #666;
+            }
+            .status-btn.waiting.active { background: #FF9500; color: white; }
+            .status-btn.confirmed.active { background: #34C759; color: white; }
+            .status-btn.came.active { background: #007AFF; color: white; }
+            .status-btn.not-came.active { background: #FF3B30; color: white; }
+            .info-section {
+                background: #f8f9fa;
+                border-radius: 12px;
+                padding: 12px;
+                margin-bottom: 15px;
+            }
+            .info-row {
+                display: flex;
+                justify-content: space-between;
+                padding: 6px 0;
+                font-size: 14px;
+            }
+            .add-item-btn {
+                background: none;
+                border: none;
+                color: #007AFF;
+                font-size: 20px;
+                cursor: pointer;
+            }
+            .service-item {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 10px;
+                border-bottom: 1px solid #f0f0f0;
+            }
+            .remove-item {
+                background: none;
+                border: none;
+                color: #ccc;
+                font-size: 18px;
+                cursor: pointer;
+            }
+            .empty-item {
+                padding: 20px;
+                text-align: center;
+                color: #ccc;
+            }
+        </style>
+    `;
+            $('head').append(styles);
+        }
+
     </script>
 {% endblock %}

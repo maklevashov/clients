@@ -768,7 +768,7 @@ class BookingController extends AbstractController
         }
 
         $data = json_decode($request->getContent(), true);
-        $appointment->setComment($data['comment']);
+        $appointment->setNotes($data['notes'] ?? null);
 
         $entityManager->flush();
 
@@ -883,5 +883,60 @@ class BookingController extends AbstractController
         }
 
         return $this->json($history);
+    }
+
+    #[Route('/api/appointments/{id}', name: 'api_get_appointment', methods: ['GET'])]
+    public function getAppointment(int $id, EntityManagerInterface $entityManager): JsonResponse
+    {
+        $appointment = $entityManager->getRepository(Appointment::class)->find($id);
+
+        if (!$appointment) {
+            return $this->json(['error' => 'Appointment not found'], 404);
+        }
+
+        $client = $appointment->getClient();
+
+        // Подсчет статистики клиента
+        $totalVisits = $entityManager->getRepository(Appointment::class)
+            ->createQueryBuilder('a')
+            ->select('COUNT(a.id)')
+            ->where('a.client = :client')
+            ->andWhere('a.status = :status')
+            ->setParameter('client', $client)
+            ->setParameter('status', Appointment::STATUS_CAME)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        $noShows = $entityManager->getRepository(Appointment::class)
+            ->createQueryBuilder('a')
+            ->select('COUNT(a.id)')
+            ->where('a.client = :client')
+            ->andWhere('a.status = :status')
+            ->setParameter('client', $client)
+            ->setParameter('status', Appointment::STATUS_NOT_CAME)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return $this->json([
+            'id' => $appointment->getId(),
+            'client' => [
+                'id' => $client->getId(),
+                'name' => $client->getName(),
+                'phone' => $client->getPhone(),
+                'totalVisits' => (int) $totalVisits,
+                'noShows' => (int) $noShows
+            ],
+            'date' => $appointment->getAppointmentDate()->format('d.m.Y'),
+            'start_time' => $appointment->getStartTime()->format('H:i'),
+            'end_time' => $appointment->getEndTime()->format('H:i'),
+            'status' => $appointment->getStatus(),
+            'notes' => $appointment->getNotes(),
+            'comment' => $appointment->getComment(),
+            'services' => $appointment->getServices(),
+            'products' => $appointment->getProducts(),
+            'totalPrice' => $appointment->getTotalPrice(),
+            'deposit' => $appointment->getDeposit(),
+            'masterName' => $appointment->getUser()->getName()
+        ]);
     }
 }
