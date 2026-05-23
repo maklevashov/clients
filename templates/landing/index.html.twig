@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+
+    <!-- SEO Meta теги -->
+    <title>{% block title %}Запись клиентов - Умная система управления записями{% endblock %}</title>
+    <meta name="description" content="{% block description %}Профессиональная система для записи клиентов, управления расписанием и учёта посещений. Удобный календарь, напоминания, история клиентов.{% endblock %}">
+    <meta name="keywords" content="запись клиентов, управление записями, CRM для салона, расписание, онлайн запись, учёт клиентов">
+    <meta name="author" content="Booking System">
+    <meta name="robots" content="index, follow">
+    <meta name="language" content="Russian">
+
+    <!-- Open Graph для соцсетей -->
+    <meta property="og:title" content="Запись клиентов - Умная система управления записями">
+    <meta property="og:description" content="Профессиональная система для записи клиентов, управления расписанием и учёта посещений.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ app.request.schemeAndHttpHost }}">
+    <meta property="og:image" content="{{ asset('images/og-image.jpg') }}">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Запись клиентов - Умная система управления записями">
+    <meta name="twitter:description" content="Профессиональная система для записи клиентов, управления расписанием и учёта посещений.">
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href="{{ app.request.schemeAndHttpHost }}">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="{{ asset('icons/favicon.svg') }}">
+    <link rel="apple-touch-icon" href="{{ asset('icons/apple-touch-icon.svg') }}">
+
+    <!-- Schema.org разметка для организации -->
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "SoftwareApplication",
+            "name": "Запись клиентов",
+            "applicationCategory": "BusinessApplication",
+            "operatingSystem": "Web, iOS, Android",
+            "description": "Профессиональная система для управления записью клиентов, расписанием и историей посещений",
+            "offers": {
+                "@type": "Offer",
+                "price": "0",
+                "priceCurrency": "RUB"
+            },
+            "aggregateRating": {
+                "@type": "AggregateRating",
+                "ratingValue": "4.8",
+                "ratingCount": "156"
+            }
+        }
+    </script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            font-size: 28px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 25px;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            opacity: 0.9;
+            transition: opacity 0.2s;
+        }
+
+        .nav-links a:hover {
+            opacity: 1;
+        }
+
+        .auth-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid white;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-outline:hover {
+            background: white;
+            color: #667eea;
+        }
+
+        .btn-primary {
+            background: white;
+            border: none;
+            color: #667eea;
+            padding: 8px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: transform 0.2s;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Hero секция */
+        .hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 80px 20px;
+            text-align: center;
+        }
+
+        .hero-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .hero h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+
+        .hero p {
+            font-size: 20px;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-hero-primary {
+            background: white;
+            color: #667eea;
+            padding: 14px 35px;
+            border-radius: 40px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .btn-hero-secondary {
+            background: transparent;
+            border: 2px solid white;
+            color: white;
+            padding: 12px 35px;
+            border-radius: 40px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-hero-primary:hover {
+            transform: translateY(-3px);
+        }
+
+        .btn-hero-secondary:hover {
+            background: white;
+            color: #667eea;
+        }
+
+        /* Преимущества */
+        .features {
+            padding: 80px 20px;
+            background: #f8f9fa;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 36px;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .section-subtitle {
+            text-align: center;
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 50px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .feature-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+
+        .feature-card h3 {
+            font-size: 22px;
+            margin-bottom: 15px;
+        }
+
+        .feature-card p {
+            color: #666;
+            line-height: 1.6;
+        }
+
+        /* Как это работает */
+        .how-it-works {
+            padding: 80px 20px;
+            background: white;
+        }
+
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            margin-top: 50px;
+        }
+
+        .step {
+            text-align: center;
+        }
+
+        .step-number {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            margin: 0 auto 20px;
+        }
+
+        .step h3 {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+
+        /* Отзывы */
+        .testimonials {
+            padding: 80px 20px;
+            background: #f8f9fa;
+        }
+
+        .testimonials-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .testimonial-card {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+        }
+
+        .testimonial-text {
+            font-size: 16px;
+            color: #555;
+            margin-bottom: 20px;
+            font-style: italic;
+        }
+
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .author-avatar {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+        }
+
+        .author-name {
+            font-weight: 600;
+        }
+
+        .author-company {
+            font-size: 12px;
+            color: #999;
+        }
+
+        /* CTA секция */
+        .cta {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 80px 20px;
+            text-align: center;
+        }
+
+        .cta h2 {
+            font-size: 36px;
+            margin-bottom: 20px;
+        }
+
+        .cta p {
+            font-size: 18px;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* Footer */
+        .footer {
+            background: #1a1a2e;
+            color: white;
+            padding: 50px 20px 30px;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+        }
+
+        .footer-column h3 {
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+
+        .footer-column p, .footer-column a {
+            color: #aaa;
+            text-decoration: none;
+            line-height: 2;
+        }
+
+        .footer-column a:hover {
+            color: white;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 40px;
+            margin-top: 40px;
+            border-top: 1px solid #333;
+            color: #888;
+            font-size: 14px;
+        }
+
+        /* Мобильная адаптация */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 32px;
+            }
+
+            .hero p {
+                font-size: 16px;
+            }
+
+            .section-title {
+                font-size: 28px;
+            }
+
+            .header-content {
+                flex-direction: column;
+            }
+
+            .nav-links {
+                order: 3;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- Header -->
+<header class="header">
+    <div class="header-content">
+        <div class="logo">
+            <span class="logo-icon">📅</span>
+            <span>Запись Клиентов</span>
+        </div>
+        <nav class="nav-links">
+            <a href="#features">Возможности</a>
+            <a href="#how-it-works">Как работает</a>
+            <a href="#testimonials">Отзывы</a>
+            <a href="#pricing">Тарифы</a>
+        </nav>
+        <div class="auth-buttons">
+            <button class="btn-outline" onclick="location.href='/login'">Вход</button>
+            <button class="btn-primary" onclick="location.href='/register'">Регистрация</button>
+        </div>
+    </div>
+</header>
+
+<!-- Hero секция -->
+<section class="hero">
+    <div class="hero-content">
+        <h1>Умная система управления записью клиентов</h1>
+        <p>Автоматизируйте запись, экономьте время и развивайте свой бизнес</p>
+        <div class="hero-buttons">
+            <button class="btn-hero-primary" onclick="location.href='/register'">Начать бесплатно</button>
+            <button class="btn-hero-secondary" onclick="location.href='/login'">Демо доступ</button>
+        </div>
+    </div>
+</section>
+
+<!-- Преимущества -->
+<section id="features" class="features">
+    <div class="container">
+        <h2 class="section-title">Почему выбирают нас?</h2>
+        <p class="section-subtitle">Все необходимое для управления записями в одном месте</p>
+
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">📅</div>
+                <h3>Умное расписание</h3>
+                <p>Интуитивно понятный календарь с возможностью drag-and-drop, цветовой индикацией занятости и быстрым созданием записей</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">👥</div>
+                <h3>База клиентов</h3>
+                <p>Полная информация о клиентах, история посещений, предпочтения, заметки и многое другое</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">🔔</div>
+                <h3>Автоматические напоминания</h3>
+                <p>SMS и push-уведомления для клиентов, чтобы снизить количество неявок</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <h3>Аналитика и отчеты</h3>
+                <p>Детальная статистика по записям, доходам, загруженности сотрудников</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">💰</div>
+                <h3>Финансовый учёт</h3>
+                <p>Учёт услуг, товаров, абонементов. Автоматический подсчёт выручки</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">📱</div>
+                <h3>Мобильное приложение</h3>
+                <p>Работайте с записями где угодно. PWA приложение с push-уведомлениями</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Как это работает -->
+<section id="how-it-works" class="how-it-works">
+    <div class="container">
+        <h2 class="section-title">Как это работает?</h2>
+        <p class="section-subtitle">Всего 4 простых шага</p>
+
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <h3>Регистрация</h3>
+                <p>Создайте аккаунт за 2 минуты. Никаких сложных настроек</p>
+            </div>
+
+            <div class="step">
+                <div class="step-number">2</div>
+                <h3>Настройка</h3>
+                <p>Добавьте услуги, товары, настройте расписание работы</p>
+            </div>
+
+            <div class="step">
+                <div class="step-number">3</div>
+                <h3>Добавление клиентов</h3>
+                <p>Импортируйте базу клиентов или добавляйте вручную</p>
+            </div>
+
+            <div class="step">
+                <div class="step-number">4</div>
+                <h3>Начало работы</h3>
+                <p>Создавайте записи и получайте уведомления</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Отзывы -->
+<section id="testimonials" class="testimonials">
+    <div class="container">
+        <h2 class="section-title">Что говорят наши клиенты?</h2>
+        <p class="section-subtitle">Более 1000 довольных предпринимателей</p>
+
+        <div class="testimonials-grid">
+            <div class="testimonial-card">
+                <div class="testimonial-text">
+                    "Отличный сервис! Записи перестали путаться, клиенты довольны напоминаниями. Очень удобный интерфейс"
+                </div>
+                <div class="testimonial-author">
+                    <div class="author-avatar">А</div>
+                    <div class="author-info">
+                        <div class="author-name">Анна Смирнова</div>
+                        <div class="author-company">Салон красоты "Элеганс"</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="testimonial-card">
+                <div class="testimonial-text">
+                    "Пользуюсь уже полгода. Очень удобно вести историю клиентов, помнить их предпочтения. Сократила время на запись в 2 раза"
+                </div>
+                <div class="testimonial-author">
+                    <div class="author-avatar">М</div>
+                    <div class="author-info">
+                        <div class="author-name">Мария Козлова</div>
+                        <div class="author-company">Студия маникюра "NailPro"</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="testimonial-card">
+                <div class="testimonial-text">
+                    "Лучшее решение для моего салона! Клиенты в восторге от напоминаний, неявок стало намного меньше"
+                </div>
+                <div class="testimonial-author">
+                    <div class="author-avatar">Е</div>
+                    <div class="author-info">
+                        <div class="author-name">Елена Петрова</div>
+                        <div class="author-company">Салон красоты "Элит"</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA секция -->
+<section id="pricing" class="cta">
+    <div class="container">
+        <h2>Готовы начать?</h2>
+        <p>Присоединяйтесь к тысячам предпринимателей, которые уже оптимизировали свою работу</p>
+        <div class="cta-buttons">
+            <button class="btn-hero-primary" onclick="location.href='/register'">Начать бесплатно</button>
+            <button class="btn-hero-secondary" onclick="location.href='/demo'">Заказать демо</button>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+    <div class="footer-content">
+        <div class="footer-column">
+            <h3>Запись Клиентов</h3>
+            <p>Современное решение для управления записью клиентов, расписанием и учётом посещений.</p>
+        </div>
+
+        <div class="footer-column">
+            <h3>Контакты</h3>
+            <p>📧 support@booking-system.ru</p>
+            <p>📞 +7 (999) 123-45-67</p>
+            <p>📍 г. Москва, ул. Примерная, д. 1</p>
+        </div>
+
+        <div class="footer-column">
+            <h3>Информация</h3>
+            <p><a href="#">О компании</a></p>
+            <p><a href="#">Политика конфиденциальности</a></p>
+            <p><a href="#">Пользовательское соглашение</a></p>
+            <p><a href="#">Помощь</a></p>
+        </div>
+    </div>
+
+    <div class="footer-bottom">
+        <p>&copy; 2024 Запись Клиентов. Все права защищены.</p>
+    </div>
+</footer>
+
+<script>
+    // Плавная прокрутка к секциям
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+    });
+</script>
+</body>
+</html>

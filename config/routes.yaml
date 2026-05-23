@@ -173,6 +173,17 @@ api_get_appointment:
     path: /api/appointments/{id}
     controller: App\Controller\BookingController::getAppointment
 
+# Главная лендинг страница
+app_landing:
+    path: /
+    controller: App\Controller\LandingController::index
+    methods: ['GET']
+
+# Страница после авторизации (дашборд)
+app_dashboard:
+    path: /dashboard
+    controller: App\Controller\DashboardController::index
+
 
     ##todo переделать на jwt (возможно не надо????)
 
