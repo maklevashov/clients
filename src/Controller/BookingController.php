@@ -13,9 +13,11 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
+#[Route('/dashboard')]
+#[IsGranted('ROLE_USER')]
 class BookingController extends AbstractController
 {
-    #[Route('/', name: 'app_booking')]
+    #[Route('/', name: 'app_dashboard')]
     public function index(EntityManagerInterface $entityManager): Response
     {
         $user = $this->getUser();

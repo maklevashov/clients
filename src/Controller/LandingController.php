@@ -11,9 +11,9 @@ class LandingController extends AbstractController
     #[Route('/', name: 'app_landing')]
     public function index(): Response
     {
-        // Если пользователь уже авторизован, перенаправляем в приложение
+        // Если пользователь уже авторизован, перенаправляем в дашборд
         if ($this->getUser()) {
-            return $this->redirectToRoute('app_booking');
+            return $this->redirectToRoute('app_dashboard');
         }
 
         return $this->render('landing/index.html.twig');

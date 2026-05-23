@@ -17,9 +17,22 @@ app_logout:
 api_login_check:
     path: /api/login_check
 
-# Главная страница
-app_home:
+
+# Главная landing страница
+app_landing:
     path: /
+    controller: App\Controller\LandingController::index
+    methods: ['GET']
+
+# Демо страница
+app_demo:
+    path: /demo
+    controller: App\Controller\LandingController::demo
+    methods: ['GET']
+
+# Страница после авторизации (дашборд)
+app_dashboard:
+    path: /dashboard
     controller: App\Controller\BookingController::index
 
 app_booking:
@@ -173,16 +186,7 @@ api_get_appointment:
     path: /api/appointments/{id}
     controller: App\Controller\BookingController::getAppointment
 
-# Главная лендинг страница
-app_landing:
-    path: /
-    controller: App\Controller\LandingController::index
-    methods: ['GET']
 
-# Страница после авторизации (дашборд)
-app_dashboard:
-    path: /dashboard
-    controller: App\Controller\DashboardController::index
 
 
     ##todo переделать на jwt (возможно не надо????)

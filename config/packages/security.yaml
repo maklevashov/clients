@@ -31,7 +31,7 @@ security:
         csrf_token_id: authenticate
       logout:
         path: app_logout
-        target: app_login
+        target: app_landing
         invalidate_session: true
       remember_me:
         secret: '%kernel.secret%'
@@ -40,8 +40,11 @@ security:
         always_remember_me: true
 
   access_control:
+    - { path: ^/$, roles: PUBLIC_ACCESS }
     - { path: ^/login$, roles: PUBLIC_ACCESS }
     - { path: ^/register$, roles: PUBLIC_ACCESS }
+    - { path: ^/demo$, roles: PUBLIC_ACCESS }
+    - { path: ^/dashboard, roles: ROLE_USER }
     - { path: ^/css, roles: PUBLIC_ACCESS }
     - { path: ^/js, roles: PUBLIC_ACCESS }
     - { path: ^/, roles: ROLE_USER }
