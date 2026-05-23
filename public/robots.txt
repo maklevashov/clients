@@ -1,6 +1,6 @@
 User-agent: *
 Allow: /
-Sitemap: https://yourdomain.com/sitemap.xml
+Sitemap: https://clientbooking.ru/sitemap.xml
 Disallow: /login
 Disallow: /register
 Disallow: /api/

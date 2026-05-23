@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+
+    <title>Демо - Запись клиентов | Попробуйте бесплатно</title>
+    <meta name="description" content="Интерактивная демонстрация системы записи клиентов. Узнайте, как работает умное расписание, управление клиентами и статистика.">
+    <meta name="robots" content="index, follow">
+
+    <link rel="icon" type="image/svg+xml" href="{{ asset('icons/favicon.svg') }}">
+    <link rel="apple-touch-icon" href="{{ asset('icons/apple-touch-icon.svg') }}">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f8f9fa;
+            color: #333;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            font-size: 28px;
+        }
+
+        .back-link {
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.2);
+            padding: 8px 16px;
+            border-radius: 25px;
+            transition: background 0.2s;
+        }
+
+        .back-link:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        /* Демо контейнер */
+        .demo-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+
+        .demo-title {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .demo-title h1 {
+            font-size: 36px;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .demo-title p {
+            font-size: 18px;
+            color: #666;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Демо карточки */
+        .demo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+
+        .demo-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+
+        .demo-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .demo-card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .demo-card-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+
+        .demo-card-header h3 {
+            font-size: 20px;
+        }
+
+        .demo-card-body {
+            padding: 20px;
+        }
+
+        .demo-feature-list {
+            list-style: none;
+            margin-bottom: 20px;
+        }
+
+        .demo-feature-list li {
+            padding: 8px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .demo-feature-list li:last-child {
+            border-bottom: none;
+        }
+
+        .demo-feature-list .check {
+            color: #34C759;
+            font-weight: bold;
+        }
+
+        .demo-btn {
+            display: block;
+            text-align: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: opacity 0.2s;
+        }
+
+        .demo-btn:hover {
+            opacity: 0.9;
+        }
+
+        /* Интерактивное демо */
+        .interactive-demo {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-top: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .interactive-demo h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+        }
+
+        /* Мини-расписание */
+        .mini-schedule {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .demo-time-slot {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .demo-time-slot:hover {
+            background: #f8f9fa;
+        }
+
+        .demo-time {
+            width: 80px;
+            font-weight: 600;
+            color: #FF9500;
+        }
+
+        .demo-info {
+            flex: 1;
+        }
+
+        .demo-client {
+            font-size: 14px;
+            color: #333;
+        }
+
+        .demo-status {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-left: 10px;
+        }
+
+        .status-waiting { background: #FF9500; }
+        .status-confirmed { background: #34C759; }
+        .status-came { background: #007AFF; }
+
+        .demo-message {
+            text-align: center;
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            color: #666;
+        }
+
+        /* Преимущества */
+        .advantages {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 50px 0;
+            text-align: center;
+        }
+
+        .advantage-item {
+            padding: 20px;
+        }
+
+        .advantage-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        .advantage-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .advantage-desc {
+            font-size: 13px;
+            color: #666;
+        }
+
+        /* CTA */
+        .cta-section {
+            text-align: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 50px;
+            border-radius: 20px;
+            margin-top: 30px;
+        }
+
+        .cta-section h3 {
+            font-size: 28px;
+            margin-bottom: 15px;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 25px;
+            flex-wrap: wrap;
+        }
+
+        .cta-btn-primary {
+            background: white;
+            color: #667eea;
+            padding: 12px 30px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+
+        .cta-btn-secondary {
+            background: transparent;
+            border: 2px solid white;
+            color: white;
+            padding: 10px 28px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .cta-btn-primary:hover, .cta-btn-secondary:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Footer */
+        .footer {
+            background: #1a1a2e;
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        @media (max-width: 768px) {
+            .demo-title h1 {
+                font-size: 28px;
+            }
+
+            .demo-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .cta-section h3 {
+                font-size: 22px;
+            }
+        }
+    </style>
+</head>
+<body>
+<header class="header">
+    <div class="header-content">
+        <div class="logo">
+            <span class="logo-icon">📅</span>
+            <span>Запись Клиентов</span>
+        </div>
+        <a href="/" class="back-link">← На главную</a>
+    </div>
+</header>
+
+<div class="demo-container">
+    <div class="demo-title">
+        <h1>Интерактивная демонстрация</h1>
+        <p>Попробуйте все возможности системы прямо сейчас</p>
+    </div>
+
+    <!-- Интерактивное демо -->
+    <div class="interactive-demo">
+        <h2>📅 Пример расписания на сегодня</h2>
+        <div class="mini-schedule" id="demoSchedule">
+            <div class="demo-time-slot" onclick="showDemoMessage('Запись к мастеру в 10:00')">
+                <div class="demo-time">10:00</div>
+                <div class="demo-info">
+                    <div class="demo-client">Екатерина Смирнова</div>
+                    <div class="demo-service">Стрижка + укладка</div>
+                </div>
+                <div class="demo-status status-confirmed"></div>
+            </div>
+            <div class="demo-time-slot" onclick="showDemoMessage('Запись к мастеру в 13:00')">
+                <div class="demo-time">13:00</div>
+                <div class="demo-info">
+                    <div class="demo-client">Анна Козлова</div>
+                    <div class="demo-service">Маникюр + педикюр</div>
+                </div>
+                <div class="demo-status status-waiting"></div>
+            </div>
+            <div class="demo-time-slot" onclick="showDemoMessage('Запись к мастеру в 16:00')">
+                <div class="demo-time">16:00</div>
+                <div class="demo-info">
+                    <div class="demo-client">Мария Петрова</div>
+                    <div class="demo-service">Окрашивание волос</div>
+                </div>
+                <div class="demo-status status-came"></div>
+            </div>
+        </div>
+        <div id="demoMessage" class="demo-message" style="display: none;"></div>
+    </div>
+
+    <!-- Возможности -->
+    <div class="demo-grid">
+        <div class="demo-card">
+            <div class="demo-card-header">
+                <div class="demo-card-icon">📅</div>
+                <h3>Умное расписание</h3>
+            </div>
+            <div class="demo-card-body">
+                <ul class="demo-feature-list">
+                    <li><span class="check">✓</span> Drag-and-drop записей</li>
+                    <li><span class="check">✓</span> Цветовая индикация занятости</li>
+                    <li><span class="check">✓</span> Недельный/месячный вид</li>
+                    <li><span class="check">✓</span> Быстрое создание записей</li>
+                </ul>
+                <a href="#" class="demo-btn" onclick="showDemoFeature('расписание')">Подробнее</a>
+            </div>
+        </div>
+
+        <div class="demo-card">
+            <div class="demo-card-header">
+                <div class="demo-card-icon">👥</div>
+                <h3>Управление клиентами</h3>
+            </div>
+            <div class="demo-card-body">
+                <ul class="demo-feature-list">
+                    <li><span class="check">✓</span> Полная история записей</li>
+                    <li><span class="check">✓</span> Заметки о клиентах</li>
+                    <li><span class="check">✓</span> Статистика посещений</li>
+                    <li><span class="check">✓</span> Быстрый поиск</li>
+                </ul>
+                <a href="#" class="demo-btn" onclick="showDemoFeature('клиенты')">Подробнее</a>
+            </div>
+        </div>
+
+        <div class="demo-card">
+            <div class="demo-card-header">
+                <div class="demo-card-icon">📊</div>
+                <h3>Аналитика</h3>
+            </div>
+            <div class="demo-card-body">
+                <ul class="demo-feature-list">
+                    <li><span class="check">✓</span> Доход по дням/неделям</li>
+                    <li><span class="check">✓</span> Популярные услуги</li>
+                    <li><span class="check">✓</span> Загруженность мастеров</li>
+                    <li><span class="check">✓</span> Отчеты в Excel</li>
+                </ul>
+                <a href="#" class="demo-btn" onclick="showDemoFeature('аналитика')">Подробнее</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Преимущества -->
+    <div class="advantages">
+        <div class="advantage-item">
+            <div class="advantage-icon">🚀</div>
+            <div class="advantage-title">Быстрый старт</div>
+            <div class="advantage-desc">Настройка за 5 минут</div>
+        </div>
+        <div class="advantage-item">
+            <div class="advantage-icon">📱</div>
+            <div class="advantage-title">Мобильное приложение</div>
+            <div class="advantage-desc">Работайте с телефона</div>
+        </div>
+        <div class="advantage-item">
+            <div class="advantage-icon">🔔</div>
+            <div class="advantage-title">Напоминания</div>
+            <div class="advantage-desc">Автоматические уведомления</div>
+        </div>
+        <div class="advantage-item">
+            <div class="advantage-icon">💳</div>
+            <div class="advantage-title">Финансовый учёт</div>
+            <div class="advantage-desc">Контроль доходов</div>
+        </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="cta-section">
+        <h3>Готовы начать?</h3>
+        <p>Присоединяйтесь к тысячам предпринимателей</p>
+        <div class="cta-buttons">
+            <a href="/register" class="cta-btn-primary">Зарегистрироваться</a>
+            <a href="/login" class="cta-btn-secondary">Войти в систему</a>
+        </div>
+    </div>
+</div>
+
+<footer class="footer">
+    <p>&copy; 2024 Запись Клиентов. Все права защищены.</p>
+</footer>
+
+<script>
+    function showDemoMessage(text) {
+        const messageDiv = document.getElementById('demoMessage');
+        messageDiv.innerHTML = `✨ Демо-режим: ${text} ✨<br><small>В полной версии откроется карточка записи</small>`;
+        messageDiv.style.display = 'block';
+
+        setTimeout(() => {
+            messageDiv.style.display = 'none';
+        }, 3000);
+    }
+
+    function showDemoFeature(feature) {
+        const messageDiv = document.getElementById('demoMessage');
+        messageDiv.innerHTML = `🔍 Демо-режим: Подробнее о функции "${feature}"<br><small>Зарегистрируйтесь, чтобы попробовать все возможности</small>`;
+        messageDiv.style.display = 'block';
+
+        setTimeout(() => {
+            messageDiv.style.display = 'none';
+        }, 3000);
+    }
+</script>
+</body>
+</html>
