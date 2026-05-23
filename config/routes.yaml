@@ -169,6 +169,10 @@ app_organization_select:
     path: /select/organization
     controller: App\Controller\OrganizationController::select
 
+api_get_appointment:
+    path: /api/appointments/{id}
+    controller: App\Controller\BookingController::getAppointment
+
 
     ##todo переделать на jwt (возможно не надо????)
 
