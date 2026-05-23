@@ -1,0 +1,138 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Выбор организации{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .select-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .select-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+
+        .logo h1 {
+            font-size: 24px;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .info-text {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .info-text a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 20px;
+            color: #999;
+        }
+
+        .flash-error {
+            background: #FFEBEE;
+            color: #C62828;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="select-container">
+        <div class="select-card">
+            <div class="logo">
+                <div class="logo-icon">🏢</div>
+                <h1>Выбор организации</h1>
+            </div>
+
+            {% for message in app.flashes('error') %}
+                <div class="flash-error">{{ message }}</div>
+            {% endfor %}
+
+            {% if organizations|length > 0 %}
+                <form method="post">
+                    <div class="form-group">
+                        <label>Выберите организацию</label>
+                        <select name="organization_id" required>
+                            <option value="">-- Выберите --</option>
+                            {% for org in organizations %}
+                                <option value="{{ org.id }}">{{ org.name }} ({{ org.phone|default('без телефона') }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn-submit">Присоединиться</button>
+                </form>
+            {% else %}
+                <div class="empty-state">
+                    <p>Нет доступных организаций</p>
+                    <p>Создайте свою организацию</p>
+                </div>
+            {% endif %}
+
+            <div class="info-text">
+                Создать новую организацию? <a href="{{ path('app_organization_setup') }}">Создать</a>
+            </div>
+        </div>
+    </div>
+{% endblock %}
