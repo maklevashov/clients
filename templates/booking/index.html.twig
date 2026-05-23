@@ -1387,6 +1387,16 @@
             });
 
             $('#currentBookings').html(html);
+
+            // Добавляем обработчик клика на карточку
+            $('.booking-card').click(function(e) {
+                // Если клик не по кнопке удаления
+                if (!$(e.target).hasClass('delete-booking')) {
+                    const appointmentId = $(this).data('appointment-id');
+                    const clientId = $(this).data('client-id');
+                    openAppointmentCard(appointmentId, clientId);
+                }
+            });
         }
 
         // Показать модальное окно
