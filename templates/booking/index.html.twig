@@ -1366,27 +1366,29 @@
 
         // Отображение записей
         function renderAppointments(appointments) {
-            if (appointments.length === 0) {
-                $('#currentBookings').html('<div class="no-appointments">Нет записей на этот день</div>');
+            $('.booking-card').remove();
+
+            if (!appointments || appointments.length === 0) {
                 return;
             }
 
-            let html = '';
-            appointments.forEach(apt => {
-                const hour = parseInt(apt.start_time.split(':')[0]);
-                const topPosition = (hour - 7) * 40;
+            appointments.forEach(function(appointment) {
+                const hour = parseInt(appointment.start_time.split(':')[0]);
+                const topPosition = (hour - 8) * 40;
 
-                html += `
-                <div class="booking-card" data-id="${apt.id}" style="top: ${topPosition}px; height: 120px;">
-                    <div class="booking-time">${apt.start_time} - ${apt.end_time}</div>
-                    <div class="booking-client">${escapeHtml(apt.client_name)}</div>
-                    <div class="booking-phone">${escapeHtml(apt.client_phone)}</div>
-                    <button class="delete-booking" onclick="deleteAppointment(${apt.id})">×</button>
-                </div>
-            `;
+                const card = `
+            <div class="booking-card" data-appointment-id="${appointment.id}"
+                 data-client-id="${appointment.client_id}"
+                 style="top: ${topPosition}px;">
+                <div class="booking-time">${appointment.start_time}-${appointment.end_time}</div>
+                <div class="booking-client">${escapeHtml(appointment.client_name)}</div>
+                <div class="booking-phone">${escapeHtml(appointment.client_phone)}</div>
+                <button class="delete-booking" onclick="event.stopPropagation(); deleteAppointment(${appointment.id})">×</button>
+            </div>
+        `;
+
+                $('.current-bookings').append(card);
             });
-
-            $('#currentBookings').html(html);
 
             // Добавляем обработчик клика на карточку
             $('.booking-card').click(function(e) {
