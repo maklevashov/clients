@@ -17,6 +17,13 @@ app_logout:
 api_login_check:
     path: /api/login_check
 
+# Временно: перенаправляем корень на дашборд
+app_home_redirect:
+    path: /
+    controller: Symfony\Bundle\FrameworkBundle\Controller\RedirectController
+    defaults:
+        route: app_dashboard
+        permanent: false
 
 # Главная landing страница
 app_landing:
